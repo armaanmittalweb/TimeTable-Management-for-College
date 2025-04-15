@@ -140,4 +140,3 @@ MIT License
 
 ## Contact
 Your Name - armaanmittal00@gmail.com
-Project Link: [Project Link](https://github.com/armaanmittalweb/timetable-management-app)
