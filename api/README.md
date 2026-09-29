@@ -62,6 +62,17 @@ cp .dev.vars.example .dev.vars    # fill in DATABASE_URL (pooled) and JWT_SECRET
 npm run dev                       # http://localhost:8787, e.g. /api/health
 ```
 
+### Without Neon (dev only)
+
+```sh
+npm run dev:local                 # http://localhost:8787, PGlite in memory, seeded on every start
+```
+
+`scripts/dev-local.ts` serves the same Hono app on Node (`@hono/node-server`) against an in-process
+PGlite loaded with `db/schema.sql` + `db/seed.sql`, with `DEMO_MODE=true` and a hard-coded dev JWT
+secret. It is for frontend work only: never deploy it. PGlite is one connection, so the frontend's
+RACE demo is serialized rather than truly concurrent (still one 201 and one 409).
+
 Frontend: set `VITE_API_URL=http://localhost:8787` in `frontend/.env` (see `frontend/.env.example`).
 Cron handlers don't fire during `wrangler dev`. To run the cleanup by hand, request
 `http://localhost:8787/cdn-cgi/local/scheduled`.
