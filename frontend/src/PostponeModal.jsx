@@ -211,6 +211,8 @@ import {
 import { Alert, AlertDescription } from './components/ui/alert';
 import { Loader2 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 const PostponeModal = ({ classId, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -229,7 +231,7 @@ const PostponeModal = ({ classId, onClose, onSuccess }) => {
         setLoading(true);
         setError('');
 
-        const classResponse = await fetch(`http://localhost:3000/api/timetable/class/${classId}`, {
+        const classResponse = await fetch(`${API_URL}/api/timetable/class/${classId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
           }
@@ -245,7 +247,7 @@ const PostponeModal = ({ classId, onClose, onSuccess }) => {
           endTime: classData.end_time.slice(0, 5)
         }));
 
-        const roomsResponse = await fetch('http://localhost:3000/api/timetable/available-rooms', {
+        const roomsResponse = await fetch(`${API_URL}/api/timetable/available-rooms`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -277,7 +279,7 @@ const PostponeModal = ({ classId, onClose, onSuccess }) => {
       setLoading(true);
       setError('');
 
-      const response = await fetch('http://localhost:3000/api/timetable/postpone-class', {
+      const response = await fetch(`${API_URL}/api/timetable/postpone-class`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, Link } from 'react-router-dom';
 
+// Backend base URL, e.g. http://localhost:8787 (wrangler dev) or the deployed Worker.
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 // Auth Context
 const AuthContext = React.createContext(null);
 
@@ -54,7 +57,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
@@ -121,7 +124,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -218,7 +221,7 @@ const Timetable = () => {
   // Fixed fetchTimetable function
   const fetchTimetable = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/timetable/timetable', {
+      const response = await fetch(`${API_URL}/api/timetable/timetable`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -245,7 +248,7 @@ const Timetable = () => {
 
   const handleCancel = async (classId) => {
     try {
-      const response = await fetch('http://localhost:3000/api/timetable/cancel-class', {
+      const response = await fetch(`${API_URL}/api/timetable/cancel-class`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -270,7 +273,7 @@ const Timetable = () => {
       setError(null);  // Clear any previous errors
       
       // First get the class details to know what time slot we're looking for
-      const classResponse = await fetch(`http://localhost:3000/api/timetable/class/${classId}`, {
+      const classResponse = await fetch(`${API_URL}/api/timetable/class/${classId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -284,7 +287,7 @@ const Timetable = () => {
       const classDetails = await classResponse.json();
 
       // Then get available rooms
-      const roomsResponse = await fetch('http://localhost:3000/api/timetable/available-rooms', {
+      const roomsResponse = await fetch(`${API_URL}/api/timetable/available-rooms`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -330,7 +333,7 @@ const Timetable = () => {
         throw new Error('Please fill in all fields');
       }
   
-      const response = await fetch('http://localhost:3000/api/timetable/postpone-class', {
+      const response = await fetch(`${API_URL}/api/timetable/postpone-class`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
