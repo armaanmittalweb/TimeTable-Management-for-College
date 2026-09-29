@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "edusched-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-25",
+  // No account_id / routes yet: add them when deploying (see README).
+  "observability": { "enabled": true },
+  // Non-secret settings. DATABASE_URL and JWT_SECRET are secrets:
+  //   wrangler secret put DATABASE_URL / wrangler secret put JWT_SECRET  (locally: .dev.vars)
+  "vars": {
+    "DEMO_MODE": "true",
+    "TIMEZONE": "Asia/Kolkata"
+  },
+  // Hourly cleanup of expired overlays and day-old sandbox overlays (the `scheduled` export).
+  "triggers": { "crons": ["17 * * * *"] }
+}
