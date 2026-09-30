@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type MiddlewareHandler } from 'hono';
 import { cors } from 'hono/cors';
 import { workspaceMiddleware } from './access';
 import type { Db } from './db';
@@ -53,11 +53,13 @@ export function createApp(getDb: DbFactory) {
 
   app.use('/api/*', bodyLimits);
 
-  app.use('/api/*', async (c, next) => {
+  const withDb: MiddlewareHandler<AppEnv> = async (c, next) => {
     c.set('db', getDb(c.env));
     c.set('session', null);
     await next();
-  });
+  };
+  app.use('/api/*', withDb);
+  app.use('/ics/*', withDb);
   app.use('/api/*', (c, next) => (NO_SESSION.test(c.req.path) ? next() : sessionMiddleware(c, next)));
 
   app.get('/api/health', async (c) => {
