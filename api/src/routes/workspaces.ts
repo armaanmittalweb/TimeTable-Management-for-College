@@ -2,7 +2,10 @@
 // Mounted at /api; /w/:slug/* has already been resolved by workspaceMiddleware.
 
 import { Hono } from 'hono';
+import { requireCoordinator } from '../access';
+import type { Period } from '../contract';
 import { createResetCode } from '../data/accounts';
+import { getPeriods } from '../data/week';
 import {
   changeMember,
   createInvite,
@@ -16,15 +19,12 @@ import {
   slugTaken,
   updateWorkspace,
 } from '../data/workspaces';
-import { requireCoordinator } from '../access';
-import type { Period } from '../contract';
 import { isTimeZone } from '../dates';
 import type { AppEnv } from '../env';
 import { badRequest, conflict, notFound } from '../http';
 import { requireUser } from '../session';
 import { inviteCode, randomCode, resetCode, sha256Hex } from '../tokens';
 import { id, oneOf, optId, optText, pathId, readArray, readBody, text, time } from '../validate';
-import { getPeriods } from '../data/week';
 
 const workspaces = new Hono<AppEnv>();
 
