@@ -70,7 +70,7 @@ export function createApp(getDb: DbFactory) {
   });
   app.get('/api/test', (c) => c.json({ message: 'API is working' }));
 
-  app.use('/api/w/:slug', workspaceMiddleware);
+  // matches /api/w/:slug itself too
   app.use('/api/w/:slug/*', workspaceMiddleware);
 
   for (const routes of [auth, workspaces, setup, timetable, pub, demo]) app.route('/api', routes);
