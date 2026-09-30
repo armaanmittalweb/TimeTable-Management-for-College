@@ -9,6 +9,7 @@ import { addDays, datesBetween, isoWeekday, mondayOf, todayIn } from '../dates';
 import type { AppEnv } from '../env';
 import { notFound } from '../http';
 import { buildCalendar } from '../ics';
+import { chargeMiss } from '../limits';
 import { normalizeCode } from '../tokens';
 import { buildOccurrences } from '../week';
 
@@ -42,7 +43,10 @@ async function calendar(
 ics.get('/b/:file', async (c) => {
   const code = stripExt(c.req.param('file'));
   const b = code && code.length <= 44 ? await findBatchByCode(c.var.db, normalizeCode(code)) : null;
-  if (!b) throw notFound('No class uses that code.');
+  if (!b) {
+    await chargeMiss(c);
+    throw notFound('No class uses that code.');
+  }
   const w = b.followed.workspace;
   return calendar(c, {
     workspaceId: b.workspaceId,
@@ -56,7 +60,10 @@ ics.get('/b/:file', async (c) => {
 ics.get('/f/:file', async (c) => {
   const token = stripExt(c.req.param('file'));
   const feed = token && token.length <= 64 ? await getFeed(c.var.db, token) : null;
-  if (!feed) throw notFound('This calendar link is not valid any more.');
+  if (!feed) {
+    await chargeMiss(c);
+    throw notFound('This calendar link is not valid any more.');
+  }
   const scope: Scope = { [`${feed.kind}Id`]: feed.targetId };
   return calendar(c, {
     workspaceId: feed.workspaceId,

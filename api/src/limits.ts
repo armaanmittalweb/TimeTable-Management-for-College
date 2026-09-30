@@ -33,7 +33,19 @@ export function rateLimit(binding: keyof Pick<Bindings, 'AUTH_LIMITER' | 'PUBLIC
   };
 }
 
-const tooLarge = (bytes: number) => () => {
+/**
+ * Charges a failed lookup to the caller's public limit. The calendar routes use this
+ * instead of `rateLimit`: Google and Apple fetch feeds from shared addresses, so only
+ * misses (someone guessing codes) should count.
+ */
+export async function chargeMiss(c: Context<AppEnv>): Promise<void> {
+  const limiter = c.env?.PUBLIC_LIMITER;
+  if (!limiter) return;
+  const { success } = await limiter.limit({ key: `PUBLIC_LIMITER:${clientIp(c)}` });
+  if (!success) throw new HttpError(429, 'rate_limited', 'Too many attempts. Wait a minute and try again.');
+}
+
+const tooLarge =(bytes: number) => () => {
   throw new HttpError(413, 'too_large', `That request is too large (the limit is ${bytes / 1024} KB).`);
 };
 
