@@ -1,13 +1,13 @@
 // The timetable grid: a sticky time rail, one column per day (or per room), period lines, hatched breaks,
 // the red now-line and class blocks. Blocks are one roving tab stop: arrows move between them, Enter opens.
 
-import { forwardRef, useMemo, type KeyboardEvent, type ReactNode } from 'react';
+import { forwardRef, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { Occurrence, Period } from '../contract';
 import { DAY_LONG, dow, fromMin, toMin } from '../lib/time';
 import { lanes, timeRange } from './layout';
 
-export const ROW = 56; // px per hour, matches --row
-export const PX = ROW / 60;
+export const ROW = 56; // px per hour at least (--row); the grid grows to fill a tall window, up to MAX_ROW
+const MAX_ROW = 76;
 
 export interface Column {
   key: string;
@@ -35,6 +35,8 @@ export interface GridProps {
   colMin?: number;
   className?: string;
   compact?: boolean;
+  /** Stretch hours so the day fills the window (the week screen). */
+  fill?: boolean;
 }
 
 const statusWord: Record<Occurrence['status'], string> = { scheduled: '', cancelled: 'Cancelled.', 'moved-away': 'Moved away.', 'moved-here': 'Moved here.' };
@@ -47,14 +49,14 @@ export function blockLabel(o: Occurrence) {
   return s.trim();
 }
 
-function Block({ o, lane, lanesN, from, meta, selected, tabbable, moving, dim, extra, compactGrid }: {
-  o: Occurrence; lane: number; lanesN: number; from: number; meta: Meta; selected: boolean; tabbable: boolean; moving: boolean; dim: boolean;
+function Block({ o, lane, lanesN, from, px, meta, selected, tabbable, moving, dim, extra, compactGrid }: {
+  o: Occurrence; lane: number; lanesN: number; from: number; px: number; meta: Meta; selected: boolean; tabbable: boolean; moving: boolean; dim: boolean;
   extra?: Record<string, unknown>; compactGrid?: boolean;
 }) {
   const s = toMin(o.start);
   const e = toMin(o.end);
-  const top = (s - from) * PX + 1;
-  const height = (e - s) * PX - 2;
+  const top = (s - from) * px + 1;
+  const height = (e - s) * px - 2;
   const short = e - s < 45 || (compactGrid && e - s < 60);
   const metaText =
     meta === 'teacher' ? `${o.room.name} · ${o.teacher.short}` :
@@ -92,13 +94,29 @@ function Block({ o, lane, lanesN, from, meta, selected, tabbable, moving, dim, e
 }
 
 export const TimeGrid = forwardRef<HTMLDivElement, GridProps>(function TimeGrid(
-  { periods, columns, nowMin, selectedKey, focusKey, movingKey, meta, label, onOpen, overlay, blockProps, colMin = 132, className = '', compact },
+  { periods, columns, nowMin, selectedKey, focusKey, movingKey, meta, label, onOpen, overlay, blockProps, colMin = 132, className = '', compact, fill },
   ref,
 ) {
+  const scroller = useRef<HTMLDivElement>(null);
+  useImperativeHandle(ref, () => scroller.current!, []);
+  const [row, setRow] = useState(compact ? 48 : ROW);
   const all = useMemo(() => columns.flatMap((c) => c.items), [columns]);
   const { from, to } = useMemo(() => timeRange(periods, all), [periods, all]);
-  const height = (to - from) * PX;
-  const pos = (start: string, end: string) => ({ top: (toMin(start) - from) * PX, height: (toMin(end) - toMin(start)) * PX });
+  const px = row / 60;
+  const height = (to - from) * px;
+  const pos = (start: string, end: string) => ({ top: (toMin(start) - from) * px, height: (toMin(end) - toMin(start)) * px });
+  useLayoutEffect(() => {
+    if (!fill || !scroller.current) return;
+    const measure = () => {
+      const top = scroller.current!.getBoundingClientRect().top + scrollY;
+      const reserve = innerWidth <= 720 ? 72 : 20;
+      const avail = innerHeight - top - 48 - reserve;
+      setRow(Math.max(ROW, Math.min(MAX_ROW, Math.floor((avail / (to - from)) * 60))));
+    };
+    measure();
+    addEventListener('resize', measure);
+    return () => removeEventListener('resize', measure);
+  }, [fill, from, to]);
   const tabKey = (focusKey && all.some((o) => o.key === focusKey) && focusKey) || (selectedKey && all.some((o) => o.key === selectedKey) && selectedKey) || all[0]?.key;
   const boundaries = useMemo(() => [...new Set(periods.flatMap((p) => [toMin(p.start), toMin(p.end)]))].sort((a, b) => a - b), [periods]);
   const breaks = periods.filter((p) => p.isBreak);
@@ -138,10 +156,10 @@ export const TimeGrid = forwardRef<HTMLDivElement, GridProps>(function TimeGrid(
   };
 
   return (
-    <div className={`tg-scroll ${className}`} ref={ref}>
+    <div className={`tg-scroll ${className}`} ref={scroller}>
       <div
         className={`tg${compact ? ' is-compact' : ''}`}
-        style={{ gridTemplateColumns: `var(--rail) repeat(${columns.length}, minmax(${colMin}px, 1fr))` }}
+        style={{ gridTemplateColumns: `var(--rail) repeat(${columns.length}, minmax(${colMin}px, 1fr))`, ['--cols' as string]: columns.length }}
         role="region"
         aria-label={label}
         data-keys-local
@@ -161,18 +179,18 @@ export const TimeGrid = forwardRef<HTMLDivElement, GridProps>(function TimeGrid(
         ))}
         <div className="tg-rail" style={{ height }} aria-hidden="true">
           {teaching.map((p) => (
-            <span key={p.idx} className="tg-time" style={{ top: (toMin(p.start) - from) * PX }}>
+            <span key={p.idx} className={`tg-time${showNow && Math.abs(toMin(p.start) - nowMin!) < 16 ? ' is-hidden' : ''}`} style={{ top: (toMin(p.start) - from) * px }}>
               <span className="mono">{p.start}</span>
               <span className="tg-pidx">P{teaching.indexOf(p) + 1}</span>
             </span>
           ))}
           {breaks.map((p) => (
-            <span key={p.idx} className="tg-time is-break" style={{ top: (toMin(p.start) - from) * PX }}>
+            <span key={p.idx} className={`tg-time is-break${showNow && Math.abs(toMin(p.start) - nowMin!) < 16 ? ' is-hidden' : ''}`} style={{ top: (toMin(p.start) - from) * px }}>
               <span className="mono">{p.start}</span>
             </span>
           ))}
           {showNow && (
-            <span className="tg-now-label mono" style={{ top: (nowMin! - from) * PX }}>
+            <span className="tg-now-label mono" style={{ top: (nowMin! - from) * px }}>
               {fromMin(nowMin!)}
             </span>
           )}
@@ -180,7 +198,7 @@ export const TimeGrid = forwardRef<HTMLDivElement, GridProps>(function TimeGrid(
         {columns.map((c) => (
           <div key={c.key} className={`tg-col${c.isToday ? ' is-today' : ''}`} style={{ height }} role="group" aria-label={c.label}>
             {boundaries.map((m) => (
-              <span key={m} className="tg-line" style={{ top: (m - from) * PX }} aria-hidden="true" />
+              <span key={m} className="tg-line" style={{ top: (m - from) * px }} aria-hidden="true" />
             ))}
             {breaks.map((p) => (
               <span key={p.idx} className="tg-break" style={pos(p.start, p.end)} aria-hidden="true">
@@ -195,6 +213,7 @@ export const TimeGrid = forwardRef<HTMLDivElement, GridProps>(function TimeGrid(
                 lane={lane}
                 lanesN={n}
                 from={from}
+                px={px}
                 meta={meta}
                 selected={o.key === selectedKey}
                 tabbable={o.key === tabKey}
@@ -204,7 +223,7 @@ export const TimeGrid = forwardRef<HTMLDivElement, GridProps>(function TimeGrid(
                 compactGrid={compact}
               />
             ))}
-            {c.isToday && showNow && <span className="tg-now" style={{ top: (nowMin! - from) * PX }} aria-hidden="true" />}
+            {c.isToday && showNow && <span className="tg-now" style={{ top: (nowMin! - from) * px }} aria-hidden="true" />}
             {!c.items.length && !overlay && <span className="sr-only">No classes.</span>}
           </div>
         ))}

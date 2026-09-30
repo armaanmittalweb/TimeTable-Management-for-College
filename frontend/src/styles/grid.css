@@ -19,7 +19,7 @@
 .tg-head.is-past .tg-date { color: var(--muted); }
 .tg-today-tag { font-size: 11.5px; font-weight: 500; color: var(--navy); }
 .tg-count { margin-left: auto; font: 400 11.5px var(--f-mono); color: var(--faint); }
-.tg-count.is-changed { color: var(--changed); }
+.tg-head .dot { margin-left: auto; }
 
 .tg-rail { position: sticky; left: 0; z-index: 3; background: var(--bg); border-right: 0; }
 .tg-time {
@@ -28,7 +28,9 @@
 }
 .tg-time .mono { font-size: 11px; color: var(--muted); background: var(--bg); padding: 0 0 0 2px; }
 .tg-time:first-child .mono { transform: translateY(7px); }
-.tg-time:first-child .tg-pidx { transform: translateY(7px); }
+.tg-time:first-child .tg-time.is-hidden { visibility: hidden; }
+.tg-pidx { transform: translateY(7px); }
+.tg-time.is-hidden { visibility: hidden; }
 .tg-pidx { font: 500 10px var(--f-mono); color: var(--faint); }
 .tg-time.is-break .mono { color: var(--faint); }
 .tg-now-label {

@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import type { Occurrence, WorkspaceFull } from '../contract';
 import { Icon } from '../ui/Icon';
 import { Segmented } from '../ui/Segmented';
-import { Link, setQuery, useLocation } from '../lib/router';
+import { Link, navigate, setQuery, useLocation } from '../lib/router';
 import { useDocumentTitle, useTick } from '../lib/hooks';
 import { addDays, DAY_SHORT, dow, fromMin, longDay, mondayOf, nowIn, toMin } from '../lib/time';
 import { duration } from '../lib/time';
@@ -92,7 +92,7 @@ export function RoomsScreen({ scope, full }: { scope: Scope; full: WorkspaceFull
             meta="room-batch"
             label={`Rooms on ${longDay(day)}`}
             colMin={120}
-            onOpen={(o) => setQuery({ day: null, view: null }) as unknown as void}
+            onOpen={(o) => navigate(`${scope.base}/week?week=${monday}&room=${o.room.id}&open=${encodeURIComponent(o.key)}`)}
             className="is-rooms"
           />
         </div>

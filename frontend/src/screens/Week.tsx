@@ -10,8 +10,9 @@ import { Segmented } from '../ui/Segmented';
 import { toast } from '../ui/Toast';
 import { Link, setQuery, useLocation } from '../lib/router';
 import { useDocumentTitle, useHotkey, useMedia, useTick } from '../lib/hooks';
-import { addDays, ago, DAY_LONG, DAY_SHORT, dayLabel, dayMonth, dow, longDay, nowIn, rangeLabel, toMin } from '../lib/time';
-import { changeWhat, movedToast, plural, savedAt } from '../lib/format';
+import { addDays, ago, DAY_LONG, DAY_SHORT, dayLabel, dow, longDay, nowIn, rangeLabel, toMin } from '../lib/time';
+import { movedToast, plural, savedAt } from '../lib/format';
+import { ChangeText } from '../ui/ChangeText';
 import { invalidate, useQuery } from '../state/query';
 import { canChange } from '../state/workspace';
 import { weekStartFor, type Scope } from '../state/scope';
@@ -57,7 +58,7 @@ export function buildColumns(week: Week, today: string, filterItems?: (o: Occurr
           <span className="tg-dow">{DAY_SHORT[dow(d)]}</span>
           <span className="tg-date">{+d.slice(8)}</span>
           {isToday && <span className="tg-today-tag">Today</span>}
-          <span className={`tg-count${changed ? ' is-changed' : ''}`}>{live || ''}</span>
+          {changed && <span className="dot" title="Changed this week" />}
         </>
       ),
       items,
@@ -97,6 +98,17 @@ export function WeekScreen({ scope, full, title }: { scope: Scope; full?: Worksp
   const occ = week?.occurrences.find((o) => o.key === selected) ?? null;
   const today = week?.today ?? now.date;
 
+  // ?open=KEY (from Rooms, Changes) opens that class.
+  const openParam = query.get('open');
+  useEffect(() => {
+    if (!openParam || !week) return;
+    if (week.occurrences.some((o) => o.key === openParam)) {
+      setSelected(openParam);
+      setFocusKey(openParam);
+    }
+    setQuery({ open: null });
+  }, [openParam, week]);
+
   // ?course=ID (from search) opens that course's next class this week.
   const courseParam = query.get('course');
   useEffect(() => {
@@ -108,9 +120,8 @@ export function WeekScreen({ scope, full, title }: { scope: Scope; full?: Worksp
   }, [courseParam, week, today, now.minutes]);
 
   // Keep reschedule slots in step with the shown week.
-  useEffect(() => {
-    if (r.st) r.setWeek(start);
-  }, [start, r]);
+  const setReschedWeek = r.setWeek;
+  useEffect(() => setReschedWeek(start), [start, setReschedWeek]);
 
   const goWeek = useCallback((delta: number) => setQuery({ week: addDays(start, delta * 7) === weekStartFor(null, scope.timezone) ? null : addDays(start, delta * 7) }), [start, scope.timezone]);
   useHotkey('ArrowLeft', () => goWeek(-1));
@@ -286,6 +297,7 @@ export function WeekScreen({ scope, full, title }: { scope: Scope; full?: Worksp
                 movingKey={r.st?.occ.key ?? null}
                 meta={meta}
                 label={`${filterName ?? title}, week of ${rangeLabel(week.start, week.end)}`}
+                fill
                 onOpen={open}
                 overlay={
                   r.st && full
@@ -464,7 +476,7 @@ function WeekSummary({ week, changes, today, nowMin, scope, onOpen }: {
                 <button type="button" onClick={() => onOpen(c!.kind === 'moved' ? `${c!.classId}:${c!.from.date}:to` : `${c!.classId}:${c!.from.date}`)}>
                   <span className={`swatch c${c!.course.color}`} aria-hidden="true" />
                   <span className="minifeed-text">
-                    <b>{c!.course.code}</b> {changeWhat(c!)}
+                    <b>{c!.course.code}</b> <ChangeText c={c!} />
                     <span className="minifeed-meta">{c!.by} · {ago(c!.at)}</span>
                   </span>
                 </button>
@@ -573,11 +585,11 @@ function CancelDialog({ occ, full, onClose }: { occ: Occurrence | null; full: Wo
   );
 }
 
-export function FeedDialog({ open, onClose, full, filter, code }: { open: boolean; onClose: () => void; full?: WorkspaceFull; filter?: { kind: FilterKind; id: number } | null; code?: string }) {
+export function FeedDialog({ open, onClose, full, filter, code, label }: { open: boolean; onClose: () => void; full?: WorkspaceFull; filter?: { kind: FilterKind; id: number } | null; code?: string; label?: string }) {
   const [url, setUrl] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const batch = filter?.kind === 'batch' ? full?.batches.find((b) => b.id === filter.id) : null;
-  const name = code ?? (filter ? (filter.kind === 'batch' ? batch?.name : filter.kind === 'teacher' ? full?.teachers.find((t) => t.id === filter.id)?.name : full?.rooms.find((x) => x.id === filter.id)?.name) : '');
+  const name = label ?? (filter ? (filter.kind === 'batch' ? batch?.name : filter.kind === 'teacher' ? full?.teachers.find((t) => t.id === filter.id)?.name : full?.rooms.find((x) => x.id === filter.id)?.name) : '');
   useEffect(() => {
     if (!open) return;
     setUrl(null);
@@ -612,4 +624,3 @@ export function FeedDialog({ open, onClose, full, filter, code }: { open: boolea
   );
 }
 
-export { dayMonth };

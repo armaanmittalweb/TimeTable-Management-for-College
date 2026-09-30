@@ -9,7 +9,8 @@ import { toast } from '../ui/Toast';
 import { Link } from '../lib/router';
 import { useDocumentTitle } from '../lib/hooks';
 import { ago, clockIn, dateIn, dayLabel, mondayOf, nowIn, addDays } from '../lib/time';
-import { changeWhat, plural, savedAt } from '../lib/format';
+import { plural, savedAt } from '../lib/format';
+import { ChangeText } from '../ui/ChangeText';
 import { load, save } from '../lib/store';
 import { invalidate, useQuery } from '../state/query';
 import type { Scope } from '../state/scope';
@@ -109,7 +110,7 @@ export function ChangesScreen({ scope, full }: { scope: Scope; full?: WorkspaceF
                       <p className="feedrow-what">
                         {fresh && <span className="dot" aria-label="New" />}
                         <span className={`swatch c${c.course.color}`} aria-hidden="true" />
-                        <b>{c.course.code}</b> {changeWhat(c)}
+                        <b>{c.course.code}</b> <ChangeText c={c} />
                         <span className="chip">{c.batch.name}</span>
                       </p>
                       <p className="feedrow-meta">

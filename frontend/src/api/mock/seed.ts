@@ -3,7 +3,7 @@
 // Mirrors the API's demo data in spirit (same people, rooms and courses as the old seed).
 
 import type { Batch, ClassRow, Course, Period, Room } from '../../contract';
-import { addDays, fromMin, mondayOf, nowIn, toMin } from '../../lib/time';
+import { addDays, fromMin, mondayOf, nowIn } from '../../lib/time';
 
 export interface TeacherRow { id: number; name: string; short: string; email: string | null }
 export interface ChangeRow {
@@ -171,4 +171,3 @@ export function emptyWorkspace(o: { id: number; slug: string; name: string; inst
   };
 }
 
-export const minutes = toMin;

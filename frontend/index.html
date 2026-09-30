@@ -2,17 +2,28 @@
 <html lang="en-GB">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#111111" />
-    <meta name="description" content="EduSched: a college timetable shown as a departures board. Professors cancel or move classes; students see the board change." />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>EduSched: the timetable your department runs on</title>
+    <meta name="description" content="A college timetable that coordinators, teachers and students share: every batch, teacher and room on one week grid, with clash-checked rescheduling and class codes for students." />
+    <link rel="canonical" href="https://edusched.amittal.dev/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="EduSched" />
+    <meta property="og:title" content="EduSched: the timetable your department runs on" />
+    <meta property="og:description" content="One week grid for every batch, teacher and room. Cancel or move a class for one day, with clash checks, and students see it straight away." />
+    <meta property="og:url" content="https://edusched.amittal.dev/" />
+    <meta property="og:image" content="https://edusched.amittal.dev/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preload" href="/fonts/B612Mono-Regular.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/BarlowCondensed-Bold.woff2" as="font" type="font/woff2" crossorigin />
-    <title>EduSched · Central Timetable</title>
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="preload" href="/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-sans-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>
+    <noscript>EduSched needs JavaScript to show the timetable.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

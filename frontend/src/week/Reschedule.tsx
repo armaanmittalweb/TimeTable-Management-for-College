@@ -5,7 +5,7 @@ import { useCallback, useRef, useState, type PointerEvent as RPointerEvent } fro
 import type { Occurrence, SlotAvailability, WorkspaceFull } from '../contract';
 import { api, ApiFailure } from '../api';
 import { Icon } from '../ui/Icon';
-import { DAY_LONG, DAY_SHORT, dayLabel, dow, toMin } from '../lib/time';
+import { DAY_LONG, DAY_SHORT, dayLabel, dow, fromMin, toMin } from '../lib/time';
 import type { Column } from './TimeGrid';
 
 export interface ReschedState {
@@ -97,7 +97,7 @@ export function SlotOverlay({ col, r, pos, full, over, onPick, periodLen }: {
     <>
       {mine.map((s) => {
         const p = pos(s.start, s.end);
-        const cellH = Math.min(p.height, periodLen(s.start) * (56 / 60));
+        const cellH = Math.min(p.height, pos(s.start, fromMin(toMin(s.start) + periodLen(s.start))).height);
         const id = slotId(s);
         const style = { top: p.top + 1, height: cellH - 2 };
         if (!isFree(s)) {

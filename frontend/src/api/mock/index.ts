@@ -7,7 +7,7 @@
 
 import type { ApiError, Batch, ClassRow, Course, ErrorCode, FollowedBatch, ImportReport, Invite, Me, Member, Period, Role, Room, SessionInfo, Teacher, WorkspaceFull, WorkspaceSummary } from '../../contract';
 import type { Method, RawResponse, Transport } from '../index';
-import { addDays, dow, isDate, mondayOf, nowIn, toMin, DAY_SHORT } from '../../lib/time';
+import { addDays, dow, isDate, nowIn, toMin, DAY_SHORT } from '../../lib/time';
 import { parseCsv } from './csv';
 import { clashes, occurrences, slots, toChange, week, type Filter } from './logic';
 import { buildCollege, emptyWorkspace, type ChangeRow, type WsRow } from './seed';
@@ -935,8 +935,3 @@ window.__esMock = {
   db: () => db,
 };
 
-// Keep week() importable for the dev check below without an unused-import error.
-export const mockWeekOf = (slug: string) => {
-  const ws = db.workspaces.find((w) => w.slug === slug);
-  return ws ? mondayOf(nowIn(ws.timezone).date) : null;
-};

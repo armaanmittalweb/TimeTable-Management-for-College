@@ -44,7 +44,7 @@ export function StudentWeek({ scope, fb, following }: { scope: Scope; fb: Follow
         </button>
       </div>
       <WeekScreen scope={scope} title={fb.batch.name} />
-      <FeedDialog open={feed} onClose={() => setFeed(false)} code={fb.code} />
+      <FeedDialog open={feed} onClose={() => setFeed(false)} code={fb.code} label={fb.batch.name} />
     </>
   );
 }
