@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
 import type { Db } from '../src/db';
+import type { RateLimiter } from '../src/env';
 import { Browser, buildCollege, ENV, expectStatus, freshPglite, harness, PASSWORD, pgliteDb, type Harness } from './helpers';
 
 let db: Db;
@@ -252,7 +253,7 @@ describe('follows', () => {
 
 describe('rate limits', () => {
   it('returns 429 when the binding says no, and works without a binding', async () => {
-    const denied = { limit: async () => ({ success: false }) } as unknown as RateLimit;
+    const denied = { limit: async () => ({ success: false }) } as RateLimiter;
     const limited = harness(db, { ...ENV, AUTH_LIMITER: denied, PUBLIC_LIMITER: denied });
     const b = limited.browser();
     const res = await b.post('/api/auth/login', { email: 'a@example.edu', password: PASSWORD });
@@ -265,7 +266,7 @@ describe('rate limits', () => {
 
   it('keys the limit by client IP', async () => {
     const keys: string[] = [];
-    const spy = { limit: async ({ key }: { key: string }) => (keys.push(key), { success: true }) } as unknown as RateLimit;
+    const spy = { limit: async ({ key }: { key: string }) => (keys.push(key), { success: true }) } as RateLimiter;
     const b = harness(db, { ...ENV, AUTH_LIMITER: spy }).browser('192.0.2.77');
     await b.post('/api/auth/login', { email: 'a@example.edu', password: PASSWORD });
     expect(keys).toEqual(['AUTH_LIMITER:192.0.2.77']);

@@ -211,7 +211,7 @@ describe('maintenance', () => {
       app.request(path, { method, headers: key ? { 'x-internal-key': key } : {} }, env);
     expect((await call('GET', '/internal/stats')).status).toBe(404);
     expect((await call('GET', '/internal/stats', 'wrong')).status).toBe(404);
-    const stats = await (await call('GET', '/internal/stats', 'k'.repeat(32))).json();
+    const stats: any = await (await call('GET', '/internal/stats', 'k'.repeat(32))).json();
     expect(stats).toEqual({ dbBytes: expect.any(Number), users: expect.any(Number), changes: expect.any(Number), demoCopies: expect.any(Number), workspaces: expect.any(Number) });
     expect(stats.users).toBeGreaterThan(0);
     const cleaned = await (await call('POST', '/internal/cleanup', 'k'.repeat(32))).json();
