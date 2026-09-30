@@ -9,6 +9,8 @@ export interface Bindings {
   DEMO_MODE?: string;
   /** IANA zone used for "today" (expiry, earliest postpone date). Default Asia/Kolkata. */
   TIMEZONE?: string;
+  /** Shared with the Switchboard; unlocks /internal/* (admin stats and cleanup). Unset = those routes 404. */
+  INTERNAL_KEY?: string;
 }
 
 export interface TokenUser {

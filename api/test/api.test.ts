@@ -1,5 +1,6 @@
 import type { PGlite } from '@electric-sql/pglite';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { createApp } from '../src/app';
 import { cleanupOverlays } from '../src/data';
 import { addDays, isoWeekday } from '../src/dates';
 import type { Db } from '../src/db';
@@ -440,5 +441,27 @@ describe('CORS', () => {
 
     const res = await api.app.request('/api/test', { headers: { Origin: 'http://localhost:5173' } }, ENV);
     expect(res.headers.get('Access-Control-Expose-Headers')).toMatch(/X-Sandbox-Id/i);
+  });
+});
+
+describe('internal routes', () => {
+  const KEY = 'internal-test-key';
+  const withKey = { ...ENV, INTERNAL_KEY: KEY };
+
+  it('404s without the key, or when no key is configured', async () => {
+    const app = createApp(() => db);
+    expect((await app.request('/internal/stats', {}, withKey)).status).toBe(404);
+    expect((await app.request('/internal/stats', { headers: { 'x-internal-key': 'wrong' } }, withKey)).status).toBe(404);
+    expect((await app.request('/internal/stats', { headers: { 'x-internal-key': KEY } }, ENV)).status).toBe(404);
+  });
+
+  it('reports database size and overlay counts, and runs the cleanup', async () => {
+    const app = createApp(() => db);
+    const stats = (await (await app.request('/internal/stats', { headers: { 'x-internal-key': KEY } }, withKey)).json()) as Record<string, number>;
+    expect(stats.dbBytes).toBeGreaterThan(0);
+    expect(stats.users).toBeGreaterThan(0);
+    expect(typeof stats.overlays).toBe('number');
+    const res = await app.request('/internal/cleanup', { method: 'POST', headers: { 'x-internal-key': KEY } }, withKey);
+    expect(await res.json()).toMatchObject({ deleted: expect.any(Number) });
   });
 });

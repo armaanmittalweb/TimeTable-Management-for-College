@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import type { Db } from './db';
 import { todayIn } from './dates';
 import type { AppEnv, Bindings } from './env';
+import { internalRoutes } from './internal';
 import { SANDBOX_HEADER } from './middleware/sandbox';
 import auth from './routes/auth';
 import timetable from './routes/timetable';
@@ -44,6 +45,7 @@ export function createApp(getDb: DbFactory) {
 
   app.route('/api/auth', auth);
   app.route('/api/timetable', timetable);
+  app.route('/internal', internalRoutes(getDb, DEFAULT_TIMEZONE));
 
   app.notFound((c) => c.json({ error: 'Not found' }, 404));
   app.onError((err, c) => {
