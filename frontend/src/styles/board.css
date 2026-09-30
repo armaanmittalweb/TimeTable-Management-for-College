@@ -1,0 +1,432 @@
+/* The board: split-flap tiles, day tabs, the departures table, platform extras. */
+
+.flap,
+.flap-tiles {
+  display: inline;
+}
+
+.t {
+  display: inline-block;
+  min-width: calc(1ch + 5px);
+  height: 1.8em;
+  margin: 1px 2px 1px 0;
+  padding: 0 1px;
+  font-family: var(--mono);
+  font-size: var(--tile-size);
+  line-height: 1.8em;
+  text-align: center;
+  vertical-align: middle;
+  color: inherit;
+  /* a flap tile: faint top highlight, dark split line through the middle */
+  background:
+    linear-gradient(var(--tile-split), var(--tile-split)) 0 50% / 100% 1px no-repeat,
+    linear-gradient(var(--tile-top), var(--tile-top)) top / 100% 1px no-repeat,
+    var(--tile);
+  border-radius: 2px;
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+}
+
+.t.sp {
+  opacity: 0.55;
+}
+
+.t.f {
+  animation: flap 70ms cubic-bezier(0.3, 0, 0.4, 1) both;
+}
+
+@keyframes flap {
+  from {
+    transform: perspective(240px) rotateX(-84deg);
+  }
+  to {
+    transform: perspective(240px) rotateX(0);
+  }
+}
+
+/* ------------------------------------------------------------ day tabs */
+
+.day-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-bottom: 1px solid var(--hair);
+}
+
+.day-tab {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 10px 4px 9px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.day-tab-name {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.14em;
+}
+
+.day-tab-date {
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.day-tab:hover,
+.day-tab[aria-selected='true'] {
+  color: var(--text);
+}
+
+.day-tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -1px;
+  height: 3px;
+  background: var(--signal);
+}
+
+.day-tab.is-today .day-tab-date {
+  color: var(--board);
+  background: var(--signal);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.day-tab:focus-visible {
+  outline-offset: -2px;
+}
+
+/* ------------------------------------------------------------ board table */
+
+.board-panel {
+  min-height: 150px;
+}
+
+.board-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.board-table thead th {
+  padding: 12px 10px 8px;
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-align: left;
+  border-bottom: 1px solid var(--hair);
+  white-space: nowrap;
+}
+
+.board-table td,
+.board-table tbody th {
+  padding: 10px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--hair);
+  font-weight: 400;
+}
+
+.board-table thead th:first-child,
+.board-table tbody td:first-child {
+  padding-left: 12px;
+}
+
+.c-time,
+.c-room {
+  white-space: nowrap;
+}
+
+.c-time .t {
+  font-weight: 700;
+}
+
+.c-status {
+  width: 1%;
+  min-width: 11ch;
+}
+
+.course {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.course-code {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.course-name {
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--soft);
+  line-height: 1.2;
+}
+
+.c-aux {
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--soft);
+  white-space: nowrap;
+}
+
+/* states */
+.row.is-cancelled .c-status {
+  color: var(--red-ink);
+}
+
+.row.is-cancelled .c-time,
+.row.is-cancelled .course-code {
+  color: var(--muted-tile);
+}
+
+.row.is-cancelled .course-name,
+.row.is-cancelled .c-aux {
+  color: var(--muted);
+}
+
+.row.is-moved .c-status,
+.row.is-arrival .c-status,
+.c-room.is-changed {
+  color: var(--signal);
+}
+
+.row.is-moved .c-time {
+  color: var(--muted-tile);
+}
+
+.row.is-arrival > :first-child {
+  box-shadow: inset 3px 0 0 var(--signal);
+}
+
+/* selection in the control room */
+.row.is-selectable {
+  cursor: pointer;
+}
+
+.row.is-selectable:hover {
+  background: #171717;
+}
+
+.row.is-selected,
+.row.is-selected:hover {
+  background: var(--select);
+}
+
+.row.is-selected > :first-child {
+  box-shadow: inset 3px 0 0 var(--signal);
+}
+
+.pick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pick-input {
+  appearance: none;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 1.5px solid var(--edge);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pick-input:checked {
+  border-color: var(--signal);
+  background: radial-gradient(circle, var(--signal) 0 4px, transparent 4.5px);
+}
+
+.pick .course {
+  cursor: pointer;
+}
+
+/* messages inside the board */
+.board-msg td {
+  padding: 34px 12px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.board-msg-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  color: var(--soft);
+}
+
+.board-msg-text.is-fault {
+  color: var(--red-ink);
+}
+
+.board-msg-detail {
+  flex-basis: 100%;
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.65em;
+  height: 1.05em;
+  margin-left: 4px;
+  background: var(--signal);
+  vertical-align: -2px;
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------ platform extras */
+
+.next {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border-left: 3px solid var(--signal);
+}
+
+.next-label {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--signal);
+}
+
+.next-flap {
+  --tile-size: 17px;
+}
+
+.next-flap .t {
+  font-weight: 700;
+}
+
+.notices {
+  margin-top: 26px;
+}
+
+.notices .section-label {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.notices-empty {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.notices-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notices-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  padding: 10px 0 9px 12px;
+  border-bottom: 1px solid var(--hair);
+  font-size: 14px;
+}
+
+.notices-list li.is-cancelled {
+  box-shadow: inset 3px 0 0 var(--red);
+}
+
+.notices-list li.is-moved {
+  box-shadow: inset 3px 0 0 var(--signal);
+}
+
+.notice-what {
+  min-width: 15ch;
+  font-weight: 700;
+}
+
+.is-cancelled .notice-state {
+  color: var(--red-ink);
+}
+
+.is-moved .notice-state {
+  color: var(--signal);
+}
+
+@media (max-width: 480px) {
+  .c-aux,
+  .col-aux {
+    display: none;
+  }
+  .board-table td,
+  .board-table tbody th {
+    padding: 9px 6px;
+  }
+  .board-table thead th {
+    padding-inline: 6px;
+  }
+  .board-table thead th:first-child,
+  .board-table tbody td:first-child {
+    padding-left: 4px;
+  }
+  .course-code {
+    font-size: 14px;
+  }
+  .course-name {
+    font-size: 13px;
+  }
+  .pick {
+    gap: 8px;
+  }
+  .day-tab {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding-block: 7px 8px;
+  }
+  .day-tab-name {
+    font-size: 15px;
+  }
+  .day-tab-date {
+    font-size: 12px;
+  }
+  .next {
+    padding: 10px 12px;
+  }
+  .next-flap {
+    --tile-size: 14px;
+  }
+}

@@ -1,0 +1,289 @@
+/* EduSched departures board. One committed dark look: it is a lit board.
+ *
+ * Contrast (WCAG 2.x), checked pair by pair:
+ *   text    #F2F2F2 on board 16.9, on tile 12.8
+ *   signal  #FFCC00 on board 12.5, on tile 9.5   (#111 on signal: 12.5)
+ *   red-ink #FF5E57 on board 6.3,  on tile 4.8   (the brief's red #E0403A is 4.46 on the board and 3.4 on a
+ *                                                 tile, so it is kept for lamps and rules, never small text)
+ *   muted   #8A8A8A on board 5.5   (board only; on tiles --muted-tile #9E9E9E, 5.4)
+ *   field borders #767676 on board 4.2 (non-text, needs 3:1)
+ */
+
+@font-face {
+  font-family: 'B612 Mono';
+  src: url('/fonts/B612Mono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'B612 Mono';
+  src: url('/fonts/B612Mono-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/fonts/BarlowCondensed-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/fonts/BarlowCondensed-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --board: #111111;
+  --panel: #161616;
+  --tile: #2a2a2a;
+  --tile-top: #343434;
+  --tile-split: #0c0c0c;
+  --text: #f2f2f2;
+  --soft: #cfcfcf;
+  --signal: #ffcc00;
+  --red: #e0403a;
+  --red-ink: #ff5e57;
+  --muted: #8a8a8a;
+  --muted-tile: #9e9e9e;
+  --hair: #2e2e2e;
+  --edge: #767676;
+  --select: #1d1a0e;
+
+  --mono: 'B612 Mono', ui-monospace, 'Cascadia Mono', Consolas, 'SFMono-Regular', Menlo, monospace;
+  --cond: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', 'Helvetica Neue', Arial, sans-serif;
+
+  --gutter: 24px;
+  --tile-size: 15px;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--board);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--board);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+html.is-embed body {
+  min-height: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.label,
+.section-label {
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.section-label {
+  margin: 0;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--soft);
+}
+
+.board-type {
+  font-family: var(--mono);
+  letter-spacing: 0.02em;
+}
+
+.tag {
+  display: inline-block;
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--board);
+  background: var(--signal);
+  padding: 1px 6px 0;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+
+/* ------------------------------------------------------------ chips, lamps, buttons */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 5px 11px 4px;
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.13em;
+  color: var(--soft);
+  background: transparent;
+  border: 1px solid #3a3a3a;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+button.chip {
+  cursor: pointer;
+}
+
+button.chip:hover:not(:disabled) {
+  border-color: var(--edge);
+  color: var(--text);
+}
+
+.chip.is-static {
+  border-color: transparent;
+  color: var(--muted);
+}
+
+.chip.is-static .board-type {
+  color: var(--soft);
+  font-size: 13px;
+}
+
+.chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.lamp {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3c3c3c;
+  flex: none;
+}
+
+.lamp.is-on {
+  background: var(--signal);
+  box-shadow: 0 0 6px rgba(255, 204, 0, 0.55);
+}
+
+.lamp.is-red {
+  background: var(--red);
+  box-shadow: 0 0 6px rgba(224, 64, 58, 0.6);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 16px 7px;
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  border: 1px solid var(--edge);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--text);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--board);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #ffd83d;
+  border-color: #ffd83d;
+}
+
+.btn-ghost.is-on {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+.btn-red {
+  color: var(--red-ink);
+  border-color: var(--red);
+}
+
+.btn-red:hover:not(:disabled),
+.btn-red.is-on {
+  border-color: var(--red-ink);
+  color: var(--red-ink);
+  background: rgba(224, 64, 58, 0.08);
+}
+
+.btn-quiet {
+  border-color: transparent;
+  color: var(--muted);
+  padding-inline: 8px;
+}
+
+.btn-quiet:hover:not(:disabled) {
+  border-color: transparent;
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
