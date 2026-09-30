@@ -1,3 +1,4 @@
 # Copy to .dev.vars for `npm run dev` (wrangler reads it; it is gitignored).
 DATABASE_URL=postgresql://USER:PASSWORD@HOST.neon.tech/edusched?sslmode=require
-JWT_SECRET=change-me-to-a-long-random-string
+# Optional: enables /internal/stats and /internal/cleanup locally.
+# INTERNAL_KEY=change-me

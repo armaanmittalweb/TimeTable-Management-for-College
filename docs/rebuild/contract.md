@@ -177,6 +177,7 @@ export interface SlotAvailability { date: string; start: string; end: string; te
 export interface FollowedBatch { code: string; workspace: { name: string; institution: string; timezone: string; days: number[] }; batch: { id: number; name: string }; periods: Period[] }
 export interface SessionInfo { id: string; current: boolean; userAgent: string | null; createdAt: string; lastSeenAt: string }
 export interface ImportReport { ok: boolean; created: number; updated: number; errors: { line: number; column?: string; message: string }[] }
+export interface Member { userId: number; name: string; email: string; role: 'coordinator' | 'teacher'; teacherId: number | null }
 ```
 
 ## Limits (free tier)
@@ -186,3 +187,43 @@ Per workspace: 200 rooms, 300 teachers, 200 batches, 500 courses, 3,000 classes;
 ## The student device
 
 The app keeps followed codes in `localStorage['edusched.follows']` as `FollowedBatch[]`, and caches the last `Week` per code and week under `edusched.cache.<code>.<weekStart>` for offline use. "Sign in to sync" pushes them to `/api/me/follows` and merges.
+
+## Decisions made while building the API
+
+Gaps the sections above left open, and how `api/` fills them. Where one of these changes a shape, `api/src/contract.ts` already has it and `frontend/src/contract.ts` must copy it.
+
+**Shapes and responses**
+- New shape `Member` (above) for `GET W/members`; `PATCH W/members/:userId` returns the updated `Member`.
+- `PATCH W`, `POST W/publish`, `POST W/unpublish` → `WorkspaceSummary`. `PUT W/periods` → `Period[]`: the body's `idx` is ignored, periods are sorted by start and renumbered from 1; overlaps are a 400. `GET W/periods` also exists.
+- Setup rows: `POST` → 201 with the row (`Room`, `Teacher`, `Batch`, `Course`, `ClassRow`), `PATCH` (partial) → 200 with the row, `DELETE` → 204. `POST W/batches/:id/code` → the `Batch` with its new code. A class without `teacherId` takes its course's teacher (400 if the course has none). Teacher `short` is unique per workspace and defaults to the name's initials.
+- `POST W/invites` and `POST W/members/:userId/reset-code` → 201 `{code, expiresAt}`. `POST W/feeds` → 200 `{url}` on the API host (`/ics/f/<token>.ics`); the same member asking again for the same target gets the same URL.
+- A demo guest's `Me.memberships` is `[]`. The copy's slug is `Me.demo.workspace`; `GET W` gives the acting role.
+- A moved-in copy's key is `${classId}:${originalDate}:to`, where the date is the occurrence that moved (its `change.from.date`), not the new date. That keeps keys unique when two meetings move to the same day.
+
+**Rules**
+- Cancel and move refuse (400) a date the class does not meet on, or one before today; move refuses a target in the past or on a day the workspace does not show.
+- Undo (`DELETE W/changes/:id`) re-checks the class's regular slot under the same locks and answers 409 `clash` if someone has taken it since.
+- Editing a class's day or times deletes that class's changes from today on (they no longer name real meetings).
+- `GET W/classes/:id/slots?week=&from=`: `from` (optional) is the date of the occurrence being moved, so its own booking does not make a slot busy. Each slot starts at a non-break period and lasts as long as the class (a two-hour lab gets two-hour slots); slots that would cross a break, run past the last period, or have already started are left out. `freeRooms` holds rooms with capacity ≥ the batch size (any room if the size is unset), smallest first.
+- The move 409's `suggestion` is the first slot where the teacher and batch are free and a room fits, on `toDate` at or after `toStart`, else later that week; `null` if none.
+- `GET W/changes` without `start` means the last 14 days and everything after. A change is in a range if its original or its new date is.
+- A demo guest (a session with no account) gets 403 from account-only routes: `/api/auth/sessions`, `/password`, `/account`, `/api/me/follows`, `POST /api/workspaces`.
+- CSRF rule in practice: a bodyless `POST`/`DELETE` (logout, publish, undo) still sends `Content-Type: application/json`, e.g. with body `{}`.
+
+**Codes and accounts**
+- Invite codes look like `INV-7KQ2MWX9PT`; `/api/join` treats a code starting with `INV-` as an invite and anything else as a class code. Teacher invites require `teacherId`; a teacher row can be linked to one account. Joining a workspace you are in, or a teacher already linked, is 409. Invites do not work in demo copies (400).
+- Reset codes look like `K7QD-M2PX`; a wrong, used or expired code is 400. A reset signs out every session of that account.
+- The auth rate limit (5/min/IP) covers signup, login, reset, password change and account deletion. The public limit (60/min/IP) covers `/api/public/*` and `/api/join`; `/ics/*` is not limited.
+
+**Demo**
+- Workers rate-limit bindings only count per 10 or 60 seconds, so the demo limit (5 copies per 10 minutes per IP) is counted in Postgres: `workspaces.demo_ip_hash` holds SHA-256 of the client IP for demo copies. A guest who opens the demo again gets a fresh copy and the old one is deleted.
+- `GET /api/demo/week?start=YYYY-MM-DD&batch=<name>` → `Week`: the demo college built in memory from `api/db/demo.json` (no session, no database), for the signed-out front page. Default batch `CSE-2A`; 404 for an unknown batch. The three sample changes sit in the current week. `Cache-Control: public, max-age=300`.
+- The demo college has seven rooms (the old six plus CR-204) and 11 courses, including two lab courses held in two-hour blocks.
+
+**CSV import**
+- A header row is required; columns are matched by name, case-insensitively, in any order. Rooms `name,capacity,building?,kind?`; teachers `name,short?,email?`; batches `name,size?`; courses `code,name,teacher?,color?` (teacher by initials or name).
+- Existing rows are matched by room name, teacher initials (or name when no initials are given), batch name, course code, all case-insensitive, and updated with the file's values (including its spelling). New batches get fresh codes. A class identical to an existing one is skipped, so re-importing a timetable is harmless; `updated` is always 0 for classes.
+- Errors are line numbers of the file (the header is line 1; a quoted value spanning lines counts from its first line), with `column` when one column is at fault. Class rows are clash-checked against the timetable and against earlier rows of the same file.
+
+**Switchboard**
+- `/internal/stats` → `{dbBytes, users, changes, demoCopies, workspaces}` (`demoCopies` = live demo copies, `workspaces` = real ones). `/internal/cleanup` → `{deleted, demoCopies, sessions, changes, codes}`, `deleted` being the total.

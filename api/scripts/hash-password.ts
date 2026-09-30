@@ -1,4 +1,4 @@
-// Usage: npm run hash-password -- '<password>'   (prints a users.password value)
+// Usage: npm run hash-password -- '<password>'   (prints a users.password_hash value)
 import { hashPassword } from '../src/password.ts';
 
 const password = process.argv[2];

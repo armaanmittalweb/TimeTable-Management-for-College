@@ -1,4 +1,5 @@
-// Loads db/schema.sql and db/seed.sql into an empty database, in one transaction.
+// Loads db/schema.sql into an empty database, in one transaction. There is no seed:
+// the demo college lives in db/demo.json and is copied per visitor by POST /api/demo.
 // Usage: DATABASE_URL=postgresql://... npm run db:setup
 import { readFileSync } from 'node:fs';
 import pg from 'pg';
@@ -13,10 +14,8 @@ const client = new pg.Client({ connectionString: url });
 await client.connect();
 try {
   await client.query('BEGIN');
-  for (const file of ['schema.sql', 'seed.sql']) {
-    await client.query(readFileSync(new URL(`../db/${file}`, import.meta.url), 'utf8'));
-    console.log(`applied db/${file}`);
-  }
+  await client.query(readFileSync(new URL('../db/schema.sql', import.meta.url), 'utf8'));
+  console.log('applied db/schema.sql');
   await client.query('COMMIT');
 } catch (err) {
   await client.query('ROLLBACK');
