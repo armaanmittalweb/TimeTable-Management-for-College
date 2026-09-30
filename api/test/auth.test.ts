@@ -146,6 +146,15 @@ describe('CSRF', () => {
   });
 });
 
+describe('CORS on errors', () => {
+  it('lets the app read error bodies cross-origin', async () => {
+    const res = await h.app.request('/api/auth/me', { headers: { Origin: 'https://edusched.amittal.dev' } }, ENV);
+    expect(res.status).toBe(401);
+    expect(res.headers.get('access-control-allow-origin')).toBe('https://edusched.amittal.dev');
+    expect(res.headers.get('access-control-allow-credentials')).toBe('true');
+  });
+});
+
 describe('sessions and passwords', () => {
   it('lists sessions, flags the current one, and signs out another device', async () => {
     const a = await h.signup();
