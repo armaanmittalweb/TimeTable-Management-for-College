@@ -106,7 +106,7 @@ npx wrangler secret put JWT_SECRET
 npx wrangler deploy
 ```
 
-Then add a route or custom domain (e.g. `api.edusched.amittal.dev`) in `wrangler.jsonc` or the dashboard.
+Then add a route or custom domain (e.g. `edusched-api.amittal.dev`) in `wrangler.jsonc` or the dashboard.
 CORS allows `https://edusched.amittal.dev`, `https://www.amittal.dev` and `http://localhost:5173` (`src/app.ts`).
 
 ## API
