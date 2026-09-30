@@ -71,6 +71,7 @@ All JSON, prefix `/api`. `W` = `/api/w/:slug`. `(C)` coordinator only, `(T)` tea
 | POST /api/auth/login | `{email,password}` → `Me`, sets cookie. 401 with one generic message |
 | POST /api/auth/logout | → 204, clears cookie, deletes the session |
 | GET /api/auth/me | → `Me` or 401 |
+| PATCH /api/auth/me | `{name?, email?}` → `Me` (settings → profile). 409 `conflict` if the email belongs to another account |
 | GET /api/auth/sessions | → `SessionInfo[]` (current one flagged) |
 | DELETE /api/auth/sessions/:id | → 204 (sign out another device) |
 | POST /api/auth/password | `{current,next}` → 204, other sessions revoked |
