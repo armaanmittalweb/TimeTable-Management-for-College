@@ -5,12 +5,16 @@
   "compatibility_date": "2026-09-25",
   "routes": [{ "pattern": "edusched-api.amittal.dev", "custom_domain": true }],
   "observability": { "enabled": true },
-  // Non-secret settings. DATABASE_URL and JWT_SECRET are secrets:
-  //   wrangler secret put DATABASE_URL / wrangler secret put JWT_SECRET  (locally: .dev.vars)
-  "vars": {
-    "DEMO_MODE": "true",
-    "TIMEZONE": "Asia/Kolkata"
-  },
-  // Hourly cleanup of expired overlays and day-old sandbox overlays (the `scheduled` export).
+  // Secrets (wrangler secret put ...; locally in .dev.vars):
+  //   DATABASE_URL  Neon pooled connection string
+  //   INTERNAL_KEY  shared with the Switchboard for /internal/*
+  // Per-IP rate limits (Workers rate limiting binding; periods can only be 10 or 60 s).
+  // The demo copy limit (5 per 10 minutes) is counted in Postgres instead, since it
+  // needs a ten-minute window.
+  "ratelimits": [
+    { "name": "AUTH_LIMITER", "namespace_id": "3101", "simple": { "limit": 5, "period": 60 } },
+    { "name": "PUBLIC_LIMITER", "namespace_id": "3102", "simple": { "limit": 60, "period": 60 } }
+  ],
+  // Hourly cleanup: expired demo copies and sessions, changes older than 180 days, spent codes.
   "triggers": { "crons": ["17 * * * *"] }
 }
