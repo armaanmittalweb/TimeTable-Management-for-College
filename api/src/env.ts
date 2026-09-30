@@ -1,45 +1,51 @@
-import type { Context } from 'hono';
+import type { Role } from './contract';
 import type { Db } from './db';
-import type { Role } from './data';
+
+/** The Workers rate limiting binding's shape (declared here so tests type-check without workers-types). */
+export interface RateLimiter {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}
 
 export interface Bindings {
   DATABASE_URL: string;
-  JWT_SECRET: string;
-  /** "false" turns off per-visitor sandboxes and re-opens registration. Anything else = public demo. */
-  DEMO_MODE?: string;
-  /** IANA zone used for "today" (expiry, earliest postpone date). Default Asia/Kolkata. */
-  TIMEZONE?: string;
   /** Shared with the Switchboard; unlocks /internal/* (admin stats and cleanup). Unset = those routes 404. */
   INTERNAL_KEY?: string;
+  /** Workers rate limit bindings (wrangler.jsonc `ratelimits`). Missing in tests and dev-local: no limit. */
+  AUTH_LIMITER?: RateLimiter;
+  PUBLIC_LIMITER?: RateLimiter;
 }
 
-export interface TokenUser {
+/** The signed-in party: an account, or a demo guest acting inside their own copy. */
+export interface Session {
+  id: string;
+  userId: number | null;
+  userName: string | null;
+  demoWorkspaceId: number | null;
+  actingRole: Role | null;
+  actingId: number | null;
+  expiresAt: string;
+}
+
+/** The workspace a /api/w/:slug request is about, and who the caller is inside it. */
+export interface WorkspaceCtx {
   id: number;
+  slug: string;
+  name: string;
+  institution: string;
+  timezone: string;
+  days: number[];
+  published: boolean;
+  isDemo: boolean;
   role: Role;
-  batch: string | null;
+  teacherId: number | null;
+  batchId: number | null;
 }
 
 export interface AppEnv {
   Bindings: Bindings;
   Variables: {
     db: Db;
-    today: string;
-    user: TokenUser;
-    /** Overlay layer this request reads and writes; null = shared layer only. */
-    sandboxId: string | null;
+    session: Session | null;
+    ws: WorkspaceCtx;
   };
-}
-
-export const isDemo = (env: Bindings) => env.DEMO_MODE !== 'false';
-
-/** JSON body, or {} when missing/invalid, so handlers can validate fields uniformly. */
-export async function jsonBody(c: Context): Promise<Record<string, unknown>> {
-  const body = await c.req.json().catch(() => null);
-  return body && typeof body === 'object' && !Array.isArray(body) ? body : {};
-}
-
-/** Positive integer id from a number or numeric string (the frontend sends <select> values as strings). */
-export function toId(v: unknown): number | null {
-  const n = typeof v === 'string' && v.trim() !== '' ? Number(v) : v;
-  return typeof n === 'number' && Number.isSafeInteger(n) && n > 0 ? n : null;
 }

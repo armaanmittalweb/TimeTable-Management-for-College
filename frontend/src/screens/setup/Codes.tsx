@@ -6,7 +6,6 @@ import { api, ApiFailure } from '../../api';
 import { Icon } from '../../ui/Icon';
 import { Dialog } from '../../ui/Dialog';
 import { toast } from '../../ui/Toast';
-import { ago } from '../../lib/time';
 import { useQuery, invalidate } from '../../state/query';
 import { useSession } from '../../state/session';
 
@@ -112,7 +111,7 @@ export function CodesStep({ full, onSaved }: { full: WorkspaceFull; onSaved: () 
         <div className="skel" style={{ height: 120 }} />
       ) : (
         <table className="tbl">
-          <thead><tr><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Teaches as</th><th scope="col">Joined</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
+          <thead><tr><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Teaches as</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
           <tbody>
             {members.data.map((m) => {
               const self = m.userId === me?.user?.id;
@@ -127,7 +126,6 @@ export function CodesStep({ full, onSaved }: { full: WorkspaceFull; onSaved: () 
                     </select>
                   </td>
                   <td>{m.teacherId ? full.teachers.find((t) => t.id === m.teacherId)?.name : <span className="muted">–</span>}</td>
-                  <td className="muted">{ago(m.joinedAt)}</td>
                   <td className="tbl-actions">
                     {!self && <button type="button" className="btn btn-sm btn-ghost" onClick={() => void resetCode(m)}>Password reset code</button>}
                     {!self && <button type="button" className="btn btn-sm btn-ghost btn-icon" aria-label={`Remove ${m.name}`} onClick={() => void act(() => w.removeMember(m.userId), `${m.name} removed.`).then(() => members.reload())}><Icon name="trash" /></button>}

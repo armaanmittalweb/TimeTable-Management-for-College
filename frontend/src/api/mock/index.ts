@@ -58,7 +58,7 @@ function seed(): DB {
     { userId: kabir.id, role: 'teacher', teacherId: ws.teachers.find((t) => t.short === 'KS')!.id, joinedAt: iso(now() - 35 * 86_400_000) },
   ];
   db.workspaces.push(ws);
-  db.invites.push({ code: 'NR-' + rand(6), wsId: ws.id, role: 'teacher', teacherId: ws.teachers.find((t) => t.short === 'NR')!.id, createdBy: priya.id, createdAt: iso(now() - 2 * 86_400_000), expiresAt: iso(now() + 5 * 86_400_000), usedBy: null });
+  db.invites.push({ code: 'INV-' + rand(10), wsId: ws.id, role: 'teacher', teacherId: ws.teachers.find((t) => t.short === 'NR')!.id, createdBy: priya.id, createdAt: iso(now() - 2 * 86_400_000), expiresAt: iso(now() + 5 * 86_400_000), usedBy: null });
   // Two other devices, so the sessions list has something to sign out.
   for (const [ua, age] of [['Safari on iPhone', 3], ['Firefox on Ubuntu', 12]] as const) {
     db.sessions.push({ id: token(), userId: priya.id, demoWs: null, acting: { role: 'coordinator' }, createdAt: iso(now() - age * 86_400_000), lastSeenAt: iso(now() - age * 3_600_000), expiresAt: iso(now() + 20 * 86_400_000), userAgent: ua });
@@ -512,7 +512,8 @@ on('POST', '/api/workspaces', ({ body }) => {
 });
 on('POST', '/api/join', ({ body }) => {
   const code = str(body.code, 'Code', 40).toUpperCase();
-  const inv = db.invites.find((i) => i.code === code && !i.usedBy && i.expiresAt > iso());
+  const inv = code.startsWith('INV-') ? db.invites.find((i) => i.code === code && !i.usedBy && i.expiresAt > iso()) : null;
+  if (code.startsWith('INV-') && !inv) throw notFound('That invite doesn’t exist, was used, or has expired. Ask your coordinator for a new one.');
   if (inv) {
     const s = currentSession();
     const u = s?.userId ? db.users.find((x) => x.id === s.userId) : null;
@@ -536,7 +537,9 @@ on('POST', '/api/demo', () => {
 on('GET', '/api/demo/week', ({ query }) => {
   const tmp = buildCollege({ id: 0, slug: 'demo', isDemo: true, nextId: (() => { let n = 1; return () => n++; })(), now: now(), createdBy: null });
   const start = query.get('start');
-  return week(tmp, start && isDate(start) ? start : undefined, { batch: tmp.batches[0].id });
+  const batch = tmp.batches.find((b) => b.name.toLowerCase() === (query.get('batch') ?? 'CSE-2A').toLowerCase());
+  if (!batch) throw notFound('The demo college has no batch by that name.');
+  return week(tmp, start && isDate(start) ? start : undefined, { batch: batch.id });
 });
 on('POST', '/api/w/:slug/demo/act-as', ({ params, body }) => {
   const a = access(params.slug);
@@ -711,7 +714,7 @@ on('GET', '/api/w/:slug/members', ({ params }) => {
   const { ws } = coord(access(params.slug));
   return ws.members.map((m): Member => {
     const u = db.users.find((x) => x.id === m.userId)!;
-    return { userId: m.userId, name: u.name, email: u.email, role: m.role, teacherId: m.teacherId, joinedAt: m.joinedAt };
+    return { userId: m.userId, name: u.name, email: u.email, role: m.role, teacherId: m.teacherId };
   });
 });
 on('DELETE', '/api/w/:slug/members/:userId', ({ params }) => {
@@ -729,7 +732,7 @@ on('PATCH', '/api/w/:slug/members/:userId', ({ params, body }) => {
   if (m.role === 'coordinator' && body.role === 'teacher' && ws.members.filter((x) => x.role === 'coordinator').length === 1) throw new Fail(409, 'conflict', 'A workspace needs at least one coordinator.');
   m.role = body.role;
   const u = db.users.find((x) => x.id === m.userId)!;
-  return { userId: m.userId, name: u.name, email: u.email, role: m.role, teacherId: m.teacherId, joinedAt: m.joinedAt } satisfies Member;
+  return { userId: m.userId, name: u.name, email: u.email, role: m.role, teacherId: m.teacherId } satisfies Member;
 });
 on('GET', '/api/w/:slug/invites', ({ params }) => {
   const { ws } = coord(access(params.slug));
@@ -744,7 +747,9 @@ on('POST', '/api/w/:slug/invites', ({ params, body }) => {
   const teacherId = body.teacherId ? Number(body.teacherId) : null;
   const teacher = teacherId ? a.ws.teachers.find((t) => t.id === teacherId) : null;
   if (teacherId && !teacher) throw bad('That teacher is not in this workspace.');
-  const code = `${teacher?.short ?? (role === 'coordinator' ? 'CO' : 'T')}-${rand(6)}`;
+  if (role === 'teacher' && !teacher) throw bad('Pick which teacher this invite is for.');
+  if (a.ws.isDemo) throw bad('Invites don’t work in the demo college.');
+  const code = `INV-${rand(10)}`;
   const inv: InviteRow = { code, wsId: a.ws.id, role, teacherId, createdBy: a.s.userId ?? 0, createdAt: iso(), expiresAt: iso(now() + 7 * 86_400_000), usedBy: null };
   db.invites.push(inv);
   return ok201({ code, expiresAt: inv.expiresAt });
@@ -758,7 +763,7 @@ on('POST', '/api/w/:slug/members/:userId/reset-code', ({ params }) => {
   const { ws } = coord(access(params.slug));
   const m = ws.members.find((x) => x.userId === Number(params.userId));
   if (!m) throw notFound();
-  const code = rand(8);
+  const code = `${rand(4)}-${rand(4)}`;
   const expiresAt = iso(now() + 3_600_000);
   db.resetCodes.push({ code, userId: m.userId, wsId: ws.id, expiresAt, usedAt: null });
   return ok201({ code, expiresAt });
@@ -812,6 +817,7 @@ on('GET', '/api/w/:slug/classes/:id/slots', ({ params, query }) => {
   return slots(a.ws, cls, w && isDate(w) ? w : nowIn(a.ws.timezone).date);
 });
 function occurrenceCheck(a: Access, cls: ClassRow, d: string) {
+  if (d < nowIn(a.ws.timezone).date) throw bad('That class has already happened, so it can’t be changed.');
   if (!a.ws.days.includes(dow(d)) || dow(d) !== cls.day) throw bad(`This class doesn’t meet on ${DAY_SHORT[dow(d)]} ${d}.`);
   const existing = a.ws.changes.find((c) => c.classId === cls.id && c.occursOn === d);
   if (existing) throw new Fail(409, 'conflict', `That class was already ${existing.kind === 'cancelled' ? 'cancelled' : 'moved'} by ${existing.createdBy}. Undo that change first.`);
@@ -839,6 +845,8 @@ on('POST', '/api/w/:slug/classes/:id/move', ({ params, body }) => {
   if (!room) throw bad('That room is not in this workspace.');
   if (toMin(toEnd) <= toMin(toStart)) throw bad('The class has to end after it starts.');
   if (!a.ws.days.includes(dow(toDate))) throw bad('The college is closed that day.');
+  const n = nowIn(a.ws.timezone);
+  if (toDate < n.date || (toDate === n.date && toMin(toStart) <= n.minutes)) throw bad('Pick a time that hasn’t passed yet.');
   occurrenceCheck(a, cls, d);
   const found = clashes(a.ws, { date: toDate, start: toStart, end: toEnd, roomId, teacherId: cls.teacherId, batchId: cls.batchId }, cls.id);
   if (found.length) {
@@ -853,8 +861,15 @@ on('DELETE', '/api/w/:slug/changes/:id', ({ params }) => {
   const a = access(params.slug);
   const ch = a.ws.changes.find((c) => c.id === Number(params.id));
   if (!ch) throw notFound('That change has already been undone.');
-  mayChange(a, a.ws.classes.find((c) => c.id === ch.classId)!);
+  const cls = a.ws.classes.find((c) => c.id === ch.classId)!;
+  mayChange(a, cls);
   a.ws.changes = a.ws.changes.filter((c) => c !== ch);
+  // The regular slot may have been taken since: re-check it like a move.
+  const taken = clashes(a.ws, { date: ch.occursOn, start: cls.start, end: cls.end, roomId: cls.roomId, teacherId: cls.teacherId, batchId: cls.batchId }, cls.id);
+  if (taken.length) {
+    a.ws.changes.push(ch);
+    throw new Fail(409, 'clash', `Can’t undo: ${clashSentence(taken[0], DAY_SHORT[dow(ch.occursOn)])}`, { clashes: taken, suggestion: null });
+  }
   return none();
 });
 on('POST', '/api/w/:slug/feeds', ({ params, body }) => {

@@ -13,8 +13,9 @@ export function StartDemo() {
   const { me, setMe } = useSession();
   const [err, setErr] = useState<string | null>(null);
   const started = useRef(false);
+  const [confirmed, setConfirmed] = useState(!me?.user);
   useEffect(() => {
-    if (started.current) return;
+    if (started.current || !confirmed) return;
     started.current = true;
     if (me?.demo && new Date(me.demo.expiresAt).getTime() > Date.now()) {
       navigate(`/w/${me.demo.workspace}`, { replace: true });
@@ -28,7 +29,16 @@ export function StartDemo() {
       },
       (e: unknown) => setErr(e instanceof ApiFailure ? e.message : 'The demo could not be opened.'),
     );
-  }, [me, setMe]);
+  }, [me, setMe, confirmed]);
+  if (!confirmed) {
+    return (
+      <AuthFrame title="Open the demo college?" sub={<>You’re signed in as {me?.user?.name}. Opening the demo signs you out in this browser; your own workspaces are untouched and you can sign back in any time.</>} foot={<Link href="/">Back to your timetable</Link>}>
+        <div className="form">
+          <button type="button" className="btn btn-primary btn-block" onClick={() => setConfirmed(true)}>Sign out and open the demo</button>
+        </div>
+      </AuthFrame>
+    );
+  }
   if (err) {
     return (
       <AuthFrame title="The demo didn’t open" sub={err} foot={<Link href="/">EduSched home</Link>}>

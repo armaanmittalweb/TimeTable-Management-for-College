@@ -173,7 +173,7 @@ export function ForgotScreen() {
         </div>
         <div className="field">
           <label htmlFor="code">Reset code</label>
-          <input id="code" className="input mono" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} required placeholder="8 letters and digits" spellCheck={false} />
+          <input id="code" className="input mono" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} required placeholder="K7QD-M2PX" spellCheck={false} />
         </div>
         <div className="field">
           <label htmlFor="password">New password</label>

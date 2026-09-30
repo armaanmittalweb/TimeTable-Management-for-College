@@ -32,7 +32,7 @@ export function useReschedule(full: WorkspaceFull | undefined) {
     async (occ: Occurrence, weekStart: string) => {
       if (!slug) return;
       try {
-        const slots = await api.w(slug).slots(occ.classId, weekStart);
+        const slots = await api.w(slug).slots(occ.classId, weekStart, occ.date);
         setSt((s) => (s && s.occ.key === occ.key && s.weekStart === weekStart ? { ...s, slots, slotsError: null } : s));
       } catch (e) {
         setSt((s) => (s && s.occ.key === occ.key ? { ...s, slots: [], slotsError: e instanceof ApiFailure ? e : new ApiFailure(0, null, true) } : s));

@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
-import { cleanupOverlays } from './data';
-import { todayIn } from './dates';
+import { cleanup, stats } from './data/maintenance';
 import type { Bindings } from './env';
 import type { Db } from './db';
 
@@ -17,35 +16,19 @@ export function sameKey(a: string, b: string): boolean {
  * Private routes for the Switchboard's admin dashboard. They are reached through a service
  * binding and need the shared INTERNAL_KEY; without it they answer 404 like any unknown path.
  */
-export function internalRoutes(getDb: (env: Bindings) => Db, defaultTimezone: string) {
+export function internalRoutes(getDb: (env: Bindings) => Db) {
   const app = new Hono<{ Bindings: Bindings }>();
 
   app.use('*', async (c, next) => {
     const key = c.env.INTERNAL_KEY;
-    if (!key || !sameKey(c.req.header('x-internal-key') ?? '', key)) return c.json({ error: 'Not found' }, 404);
+    if (!key || !sameKey(c.req.header('x-internal-key') ?? '', key)) {
+      return c.json({ error: 'Not found.', code: 'not_found' }, 404);
+    }
     await next();
   });
 
-  app.get('/stats', async (c) => {
-    const [row] = await getDb(c.env).query<{ db_bytes: string; overlays: number; sandboxes_24h: number; users: number }>(
-      `SELECT pg_database_size(current_database())::bigint AS db_bytes,
-              (SELECT count(*)::int FROM modified_classes) AS overlays,
-              (SELECT count(DISTINCT sandbox_id)::int FROM modified_classes
-                WHERE sandbox_id IS NOT NULL AND created_at > now() - interval '24 hours') AS sandboxes_24h,
-              (SELECT count(*)::int FROM users) AS users`,
-    );
-    return c.json({
-      dbBytes: Number(row?.db_bytes ?? 0),
-      overlays: row?.overlays ?? 0,
-      sandboxes24h: row?.sandboxes_24h ?? 0,
-      users: row?.users ?? 0,
-    });
-  });
-
-  app.post('/cleanup', async (c) => {
-    const deleted = await cleanupOverlays(getDb(c.env), todayIn(c.env.TIMEZONE || defaultTimezone));
-    return c.json({ deleted });
-  });
+  app.get('/stats', async (c) => c.json(await stats(getDb(c.env))));
+  app.post('/cleanup', async (c) => c.json(await cleanup(getDb(c.env))));
 
   return app;
 }

@@ -34,6 +34,7 @@ const ROOMS: Omit<Room, 'id'>[] = [
   { name: 'CR-201', capacity: 60, building: 'Main Block', kind: 'lecture' },
   { name: 'CR-202', capacity: 60, building: 'Main Block', kind: 'lecture' },
   { name: 'CR-203', capacity: 60, building: 'Main Block', kind: 'lecture' },
+  { name: 'CR-204', capacity: 60, building: 'Main Block', kind: 'lecture' },
   { name: 'LT-101', capacity: 120, building: 'Main Block', kind: 'lecture' },
   { name: 'LAB-301', capacity: 60, building: 'Tech Block', kind: 'lab' },
   { name: 'LAB-302', capacity: 60, building: 'Tech Block', kind: 'lab' },

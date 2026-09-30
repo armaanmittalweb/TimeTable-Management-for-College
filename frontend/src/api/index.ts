@@ -96,7 +96,7 @@ export const api = {
 
   // Demo
   startDemo: () => call<Me>('POST', '/api/demo'),
-  demoWeek: (start?: string) => call<Week>('GET', `/api/demo/week${q({ start })}`),
+  demoWeek: (start?: string, batch?: string) => call<Week>('GET', `/api/demo/week${q({ start, batch })}`),
 
   // Students
   publicBatch: (code: string) => call<FollowedBatch>('GET', `/api/public/${enc(code)}`),
@@ -138,7 +138,7 @@ export const api = {
       today: (f: { batch?: number; teacher?: number }) => call<Occurrence[]>('GET', `${W}/today${q(f)}`),
       changes: (start?: string, end?: string) => call<Change[]>('GET', `${W}/changes${q({ start, end })}`),
       freeRooms: (b: { date: string; start: string; end: string; exclude?: number }) => call<Room[]>('GET', `${W}/free-rooms${q(b)}`),
-      slots: (classId: number, week: string) => call<SlotAvailability[]>('GET', `${W}/classes/${classId}/slots${q({ week })}`),
+      slots: (classId: number, week: string, from?: string) => call<SlotAvailability[]>('GET', `${W}/classes/${classId}/slots${q({ week, from })}`),
       cancel: (classId: number, b: { date: string; reason?: string }) => call<Change>('POST', `${W}/classes/${classId}/cancel`, b),
       move: (classId: number, b: { date: string; toDate: string; toStart: string; toEnd: string; roomId: number; reason?: string }) =>
         call<Change>('POST', `${W}/classes/${classId}/move`, b),

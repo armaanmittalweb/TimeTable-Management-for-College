@@ -42,5 +42,5 @@ export interface SlotAvailability { date: string; start: string; end: string; te
 export interface FollowedBatch { code: string; workspace: { name: string; institution: string; timezone: string; days: number[] }; batch: { id: number; name: string }; periods: Period[] }
 export interface SessionInfo { id: string; current: boolean; userAgent: string | null; createdAt: string; lastSeenAt: string }
 export interface ImportReport { ok: boolean; created: number; updated: number; errors: { line: number; column?: string; message: string }[] }
-export interface Member { userId: number; name: string; email: string; role: 'coordinator' | 'teacher'; teacherId: number | null; joinedAt: string }
-export interface Invite { code: string; role: 'teacher' | 'coordinator'; teacherId: number | null; expiresAt: string; createdAt: string }
+export interface Member { userId: number; name: string; email: string; role: 'coordinator' | 'teacher'; teacherId: number | null }
+export interface Invite { code: string; role: 'teacher' | 'coordinator'; teacherId: number | null; expiresAt: string; createdAt: string }   // requested by the app, see the last section

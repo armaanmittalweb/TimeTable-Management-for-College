@@ -1,6 +1,5 @@
-import { createApp, DEFAULT_TIMEZONE } from './app';
-import { cleanupOverlays } from './data';
-import { todayIn } from './dates';
+import { createApp } from './app';
+import { cleanup } from './data/maintenance';
 import { neonDb } from './db';
 import type { Bindings } from './env';
 
@@ -8,11 +7,8 @@ const app = createApp((env) => neonDb(env.DATABASE_URL));
 
 export default {
   fetch: app.fetch,
-  // Cron trigger (wrangler.jsonc): drop expired overlays and day-old sandbox overlays.
+  // Cron trigger (wrangler.jsonc): expired demo copies and sessions, old changes, spent codes.
   async scheduled(_event, env, ctx) {
-    const today = todayIn(env.TIMEZONE || DEFAULT_TIMEZONE);
-    ctx.waitUntil(
-      cleanupOverlays(neonDb(env.DATABASE_URL), today).then((n) => console.log(`cleanup: deleted ${n} overlays`)),
-    );
+    ctx.waitUntil(cleanup(neonDb(env.DATABASE_URL)).then((r) => console.log('cleanup', JSON.stringify(r))));
   },
 } satisfies ExportedHandler<Bindings>;
