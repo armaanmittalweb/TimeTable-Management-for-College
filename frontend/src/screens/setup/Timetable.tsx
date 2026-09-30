@@ -44,7 +44,7 @@ export function TimetableStep({ full, onSaved }: { full: WorkspaceFull; onSaved:
     const items = classes.filter((c) => c.day === d).map((c) => asOcc(full, c));
     return {
       key: String(d), label: `${DAY_LONG[d]}, ${plural(items.length, 'class', 'classes')}`, items,
-      head: <><span className="tg-dow">{DAY_SHORT[d]}</span><span className="tg-count">{items.length || ''}</span></>,
+      head: <><span className="tg-date tg-dayname">{DAY_LONG[d]}</span><span className="tg-count">{items.length ? plural(items.length, 'class', 'classes') : ''}</span></>,
     };
   });
 
@@ -132,10 +132,12 @@ export function TimetableStep({ full, onSaved }: { full: WorkspaceFull; onSaved:
           <h3 className="cp-h3">Courses</h3>
           <p className="field-hint">Drag onto the grid, or select one and click a period.</p>
           <ul>
-            {full.courses.map((c) => {
+            {[...full.courses].sort((a, b) => Number(hoursOf(b.id) > 0) - Number(hoursOf(a.id) > 0)).map((c, i, list) => {
               const t = full.teachers.find((x) => x.id === c.teacherId);
+              const firstUnused = hoursOf(c.id) === 0 && (i === 0 || hoursOf(list[i - 1].id) > 0);
               return (
                 <li key={c.id}>
+                  {firstUnused && <p className="palette-sep">Not yet in {batch?.name}</p>}
                   <button
                     type="button"
                     draggable
@@ -148,8 +150,8 @@ export function TimetableStep({ full, onSaved }: { full: WorkspaceFull; onSaved:
                     onClick={() => setPaletteCourse(paletteCourse === c.id ? null : c.id)}
                   >
                     <span className="pal-code">{c.code}</span>
+                    <span className="pal-meta mono">{t?.short ?? 'no teacher'}{hoursOf(c.id) ? ` · ${hoursOf(c.id)} h` : ''}</span>
                     <span className="pal-name">{c.name}</span>
-                    <span className="pal-meta mono">{t?.short ?? 'no teacher'} · {hoursOf(c.id)} h</span>
                   </button>
                 </li>
               );

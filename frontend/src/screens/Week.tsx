@@ -414,7 +414,7 @@ function SubBar({ start, full, filter, changes, scope, onWeek, onFeed, offlineSi
         {changes > 0 && (
           <Link className="sub-changes" href={`${scope.base === '/' ? '' : scope.base}/changes`}>
             <span className="dot" aria-hidden="true" />
-            {plural(changes, 'change')} this week
+            {plural(changes, 'change')}<span className="sub-long"> this week</span>
           </Link>
         )}
         {changes === 0 && !offlineSince && <span className="sub-nochange">No changes this week</span>}

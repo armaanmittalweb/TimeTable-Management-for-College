@@ -94,6 +94,7 @@ export function RoomsScreen({ scope, full }: { scope: Scope; full: WorkspaceFull
             colMin={120}
             onOpen={(o) => navigate(`${scope.base}/week?week=${monday}&room=${o.room.id}&open=${encodeURIComponent(o.key)}`)}
             className="is-rooms"
+            fill
           />
         </div>
       ) : (

@@ -6,7 +6,8 @@ import type { Occurrence, WorkspaceFull } from '../contract';
 import { Icon } from '../ui/Icon';
 import { setQuery, useLocation } from '../lib/router';
 import { useDocumentTitle, useTick } from '../lib/hooks';
-import { addDays, DAY_SHORT, dayLabel, dow, duration, longDay, mondayOf, nowIn, toMin } from '../lib/time';
+import { addDays, ago, DAY_SHORT, dayLabel, dow, duration, longDay, mondayOf, nowIn, toMin } from '../lib/time';
+import { ChangeText } from '../ui/ChangeText';
 import { plural, savedAt } from '../lib/format';
 import type { Scope } from '../state/scope';
 import { ErrorState, resolveFilter, useWeekData } from './Week';
@@ -38,8 +39,14 @@ export function TodayScreen({ scope, full, title }: { scope: Scope; full?: Works
   }, [week, nextQ.data, afterWeek, day, isToday, now.minutes]);
 
   const strip = week?.days ?? Array.from({ length: 5 }, (_, i) => addDays(monday, i));
+  // The next teaching day after the one shown, for the side column.
+  const pool = [...(week?.occurrences ?? []), ...(nextQ.data && nextQ.data.start !== week?.start ? nextQ.data.occurrences : [])];
+  const nextDay = [...new Set(pool.filter((o) => o.date > day && live(o)).map((o) => o.date))].sort()[0];
+  const nextItems = nextDay ? pool.filter((o) => o.date === nextDay) : [];
+  const weekChanges = [...new Map((week?.occurrences ?? []).filter((o) => o.change).map((o) => [o.change!.id, o.change!])).values()];
 
   return (
+    <div className="today-wrap">
     <div className="today">
       <header className="today-head">
         <div>
@@ -174,6 +181,44 @@ export function TodayScreen({ scope, full, title }: { scope: Scope; full?: Works
           )}
         </div>
       )}
+    </div>
+    {week && (
+      <aside className="today-side" aria-label="Coming up">
+        {nextDay && (
+          <section>
+            <h2 className="cp-h3">{nextDay === addDays(now.date, 1) ? 'Tomorrow' : 'Next'} · {dayLabel(nextDay)}</h2>
+            <ul className="mini-day">
+              {nextItems.map((o) => (
+                <li key={o.key} className={`c${o.course.color} is-${o.status}`}>
+                  <span className="mono">{o.start}</span>
+                  <span className="mini-day-bar" aria-hidden="true" />
+                  <span><b>{o.course.code}</b> {o.course.name}</span>
+                  <span className="mono mini-day-room">{o.status === 'moved-away' ? 'moved' : o.status === 'cancelled' ? 'cancelled' : o.room.name}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        <section>
+          <h2 className="cp-h3">Changes this week</h2>
+          {weekChanges.length ? (
+            <ul className="minifeed minifeed-static">
+              {weekChanges.map((c) => (
+                <li key={c.id}>
+                  <span className={`swatch c${c.course.color}`} aria-hidden="true" />
+                  <span className="minifeed-text">
+                    <b>{c.course.code}</b> <ChangeText c={c} />
+                    <span className="minifeed-meta">{c.by} · {ago(c.at)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="rail-empty">Everything runs as usual this week.</p>
+          )}
+        </section>
+      </aside>
+    )}
     </div>
   );
 }

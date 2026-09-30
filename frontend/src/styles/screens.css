@@ -21,7 +21,21 @@
 @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
 
 /* ---------- Today ---------- */
-.today { width: 100%; max-width: 760px; margin: 0 auto; padding: 22px 24px 48px; }
+.today-wrap { display: grid; grid-template-columns: minmax(0, 760px) 300px; gap: 40px; justify-content: center; padding: 0 24px; }
+.today { width: 100%; max-width: 760px; margin: 0 auto; padding: 22px 0 48px; }
+.today-side { padding-top: 30px; display: flex; flex-direction: column; gap: 22px; }
+.today-side section { display: flex; flex-direction: column; gap: 8px; }
+.mini-day { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+.mini-day li { display: grid; grid-template-columns: 42px 3px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 10px; border-top: 1px solid var(--line); font-size: 13px; }
+.mini-day li:first-child { border-top: 0; }
+.mini-day li > span:nth-child(3) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-day li b { color: var(--ci); font-weight: 600; }
+.mini-day .mono { font-size: 12px; color: var(--ink-2); }
+.mini-day-bar { align-self: stretch; background: var(--ci); border-radius: 2px; }
+.mini-day li.is-cancelled > span:nth-child(3), .mini-day li.is-moved-away > span:nth-child(3) { text-decoration: line-through; color: var(--muted); }
+.mini-day li.is-cancelled b, .mini-day li.is-moved-away b { color: var(--muted); }
+.minifeed-static li { display: flex; gap: 8px; padding: 6px 8px; font-size: 13px; line-height: 1.4; }
+.minifeed-static .swatch { margin-top: 4px; }
 .today-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .today-title { font-size: 22px; letter-spacing: -0.02em; }
 .today-sub { color: var(--muted); font-size: 13.5px; }
@@ -98,7 +112,10 @@
 .feedrow-time { font-size: 12px; color: var(--muted); padding-top: 2px; }
 .feedrow-ico { width: 22px; height: 22px; border-radius: 5px; display: grid; place-items: center; background: var(--bg-sunken); color: var(--ink-2); }
 .feedrow-ico.is-moved { background: var(--changed-bg); color: var(--changed); }
-.feedrow-what { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 13.5px; }
+.feedrow-what { font-size: 13.5px; }
+.feedrow-what .swatch { display: inline-block; margin-right: 7px; vertical-align: -1px; }
+.feedrow-what .dot { margin-right: 7px; vertical-align: 1px; }
+.feedrow-what .chip { margin-left: 8px; vertical-align: 1px; }
 .feedrow-what b { font-weight: 600; }
 .feedrow-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .feedrow-reason { color: var(--ink-2); }
@@ -205,6 +222,10 @@
 .embed-changes { font-size: 12.5px; color: var(--changed); display: inline-flex; align-items: center; gap: 6px; }
 .embed-open { margin-left: auto; }
 
+@media (max-width: 1100px) {
+  .today-wrap { grid-template-columns: minmax(0, 760px); }
+  .today-side { display: none; }
+}
 @media (max-width: 900px) {
   .front-tag { display: none; }
   .front-text { grid-template-columns: 1fr; gap: 18px; }
@@ -214,7 +235,9 @@
   .freenow { grid-template-columns: 1fr; }
 }
 @media (max-width: 720px) {
-  .page, .today { padding: 16px 16px 32px; }
+  .page { padding: 16px 16px 32px; }
+  .today-wrap { padding: 0 16px; }
+  .today { padding: 16px 0 32px; }
   .rooms .page-head, .rooms .rooms-days, .rooms .freenow, .rooms .empty { margin-left: 16px; margin-right: 16px; }
   .front-bar { height: auto; flex-wrap: wrap; padding: 8px 12px; gap: 8px; }
   .front-code { order: 3; width: 100%; margin-left: 0; }
@@ -225,7 +248,9 @@
   .today-filter .select { width: 100%; }
   .dayl-row { grid-template-columns: 50px 3px minmax(0, 1fr) auto; gap: 10px; padding: 10px 12px; }
   .dayl-who { display: none; }
-  .dayl-state { grid-column: 3 / -1; justify-content: flex-start; }
+  .dayl-time, .dayl-bar, .dayl-main { grid-row: span 2; }
+  .dayl-room { text-align: right; }
+  .dayl-state { grid-column: 4; }
   .dayl-state:empty { display: none; }
   .feedrow { grid-template-columns: 22px minmax(0, 1fr); }
   .feedrow-time { display: none; }

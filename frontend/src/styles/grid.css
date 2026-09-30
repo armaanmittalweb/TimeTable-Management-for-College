@@ -17,6 +17,7 @@
 .tg-head.is-today .tg-date { color: var(--navy); }
 .tg-head.is-today .tg-dow { color: var(--navy); }
 .tg-head.is-past .tg-date { color: var(--muted); }
+.tg-dayname { font-size: 14px; }
 .tg-today-tag { font-size: 11.5px; font-weight: 500; color: var(--navy); }
 .tg-count { margin-left: auto; font: 400 11.5px var(--f-mono); color: var(--faint); }
 .tg-head .dot { margin-left: auto; }

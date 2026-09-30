@@ -153,6 +153,10 @@
   .sub-filter { order: 3; width: 100%; padding-left: 0; border-left: 0; }
   .sub-pick { flex: 1; min-width: 0; }
   .sub-nochange { display: none; }
+  .sub-long { display: none; }
+  .sub-today:disabled { display: none; }
+  .sub-week { flex: 1; }
+  .sub-right { gap: 4px; }
   .sub-offline { order: 4; }
   .rail { display: none; }
   .confirm { bottom: calc(64px + env(safe-area-inset-bottom)); flex-wrap: wrap; }

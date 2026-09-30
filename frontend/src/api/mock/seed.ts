@@ -65,7 +65,7 @@ const COURSES: [string, string, number, string][] = [
   ['HS201', 'Professional Communication', 8, 'FQ'],
   ['EC201', 'Signals and Systems', 5, 'AK'],
   ['EC203', 'Analog Circuits', 6, 'FQ'],
-  ['EC205', 'Digital Electronics', 3, 'NR'],
+  ['EC205', 'Digital Electronics', 2, 'NR'],
   ['EC291', 'Digital Electronics Lab', 4, 'NR'],
 ];
 

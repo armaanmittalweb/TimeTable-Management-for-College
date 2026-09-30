@@ -1,5 +1,5 @@
 /* ---------- App frame ---------- */
-.app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; background: var(--bg); }
+.app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; background: var(--bg); overflow-x: clip; }
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .main:focus { outline: none; }
 .boot { min-height: 100vh; background: var(--bg); }

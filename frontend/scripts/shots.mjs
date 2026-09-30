@@ -96,6 +96,7 @@ const scenes = {
     const slot = await page.locator('.slot.is-picked').getAttribute('data-slot');
     const roomName = (await page.locator('#move-room option:checked').textContent()).split(' ·')[0];
     await page.evaluate(({ slot, roomName }) => {
+      // Another coordinator moves ECE-2A's Friday HS201 into the same room at the same time, a moment earlier.
       const m = window.__esMock;
       const ws = m.db().workspaces.find((w) => w.slug.startsWith('demo-'));
       const [date, start] = slot.split('T');
@@ -103,8 +104,7 @@ const scenes = {
       const batch = ws.batches.find((b) => b.name === 'ECE-2A');
       const other = ws.classes.find((c) => c.batchId === batch.id && c.day === 5 && c.start === '10:00');
       const end = `${String(+start.slice(0, 2) + 1).padStart(2, '0')}:00`;
-      const r = m.raw('POST', `/api/w/${ws.slug}/classes/${other.id}/move`, { date: '2026-10-02', toDate: date, toStart: start, toEnd: end, roomId: room.id });
-      if (r.status !== 201) console.warn('seed clash failed', JSON.stringify(r.body));
+      ws.changes.push({ id: 99999, classId: other.id, occursOn: '2026-10-02', kind: 'moved', toDate: date, toStart: start, toEnd: end, toRoomId: room.id, reason: null, createdBy: 'Kabir Sethi', createdAt: new Date().toISOString() });
     }, { slot, roomName });
     await page.getByRole('button', { name: 'Confirm move' }).click();
     await page.locator('.confirm.is-error').waitFor();
@@ -221,11 +221,15 @@ const scenes = {
     await page.locator('.blk').first().waitFor();
     await settle(page);
     await shot(page, `student-week-${size}`);
+    // Offline: this week was seen, so it shows the saved copy; next week was never loaded.
     await page.context().setOffline(true);
-    await page.goto(`${BASE}/b/CSE2A-K7QD/week`).catch(() => undefined);
-    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
-    await page.locator('.blk').first().waitFor({ timeout: 8000 }).catch(() => undefined);
-    await settle(page, 600);
+    await page.keyboard.press('ArrowRight');
+    await page.locator('.errstate').waitFor();
+    await settle(page, 300);
+    await shot(page, `student-offline-nocopy-${size}`);
+    await page.keyboard.press('ArrowLeft');
+    await page.locator('.sub-offline').waitFor();
+    await settle(page, 300);
     await shot(page, `student-offline-${size}`);
     await page.context().setOffline(false);
   },

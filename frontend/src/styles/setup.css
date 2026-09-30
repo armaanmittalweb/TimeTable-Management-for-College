@@ -1,12 +1,12 @@
 /* ---------- Setup ---------- */
 .setup { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: calc(100vh - 48px); }
-.steps { border-right: 1px solid var(--line); background: var(--bg-rail); padding: 20px 12px; position: sticky; top: 48px; align-self: start; height: calc(100vh - 48px); overflow: auto; }
+.steps { min-width: 0; border-right: 1px solid var(--line); background: var(--bg-rail); padding: 20px 12px; position: sticky; top: 48px; align-self: start; height: calc(100vh - 48px); overflow: auto; }
 .steps-head { padding: 0 8px 14px; }
 .steps-head h1 { font-size: 16px; }
-.steps-head p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.steps-head p { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .steps-bar { height: 3px; border-radius: 2px; background: var(--line); margin-top: 8px; overflow: hidden; }
 .steps-bar span { display: block; height: 100%; background: var(--ok); }
-.steps ol { display: flex; flex-direction: column; gap: 1px; }
+.steps ol { display: flex; flex-direction: column; gap: 1px; position: relative; }
 .step { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: var(--radius); color: var(--ink-2); font-size: 13.5px; }
 .step:hover { background: var(--bg-hover); text-decoration: none; }
 .step.is-on { background: var(--bg); color: var(--ink); font-weight: 500; box-shadow: inset 0 0 0 1px var(--line-strong); }
@@ -45,6 +45,7 @@
 .tbl-edit td { cursor: default; }
 .tbl-new td { background: var(--bg-rail); }
 .tbl-actions { text-align: right; white-space: nowrap; width: 1%; }
+.tbl-actions .btn { vertical-align: middle; }
 .tbl-actions .btn + .btn { margin-left: 4px; }
 .tbl-actions-h { width: 1%; }
 .tbl-tools { display: flex; align-items: center; gap: 12px; justify-content: space-between; flex-wrap: wrap; }
@@ -86,6 +87,7 @@
 .report { display: flex; flex-direction: column; gap: 6px; }
 .report.is-ok { flex-direction: row; gap: 12px; padding: 12px 14px; border-radius: var(--radius); background: color-mix(in srgb, var(--ok) 8%, var(--bg)); }
 .report.is-ok > svg { color: var(--ok); margin-top: 2px; }
+.report > .btn { align-self: flex-start; }
 .report-h { display: flex; align-items: center; gap: 8px; color: var(--danger); font-weight: 500; }
 
 /* Timetable editor */
@@ -94,12 +96,13 @@
 .tt-batch .select { width: auto; min-width: 130px; }
 .palette { border-right: 1px solid var(--line); padding: 12px; background: var(--bg-rail); display: flex; flex-direction: column; gap: 8px; }
 .palette ul { display: flex; flex-direction: column; gap: 5px; }
-.pal { display: flex; flex-direction: column; width: 100%; text-align: left; padding: 6px 8px 6px 9px; border-radius: var(--radius); background: var(--cb); border-left: 3px solid var(--ci); font-size: 12.5px; line-height: 1.3; cursor: grab; }
+.pal { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; width: 100%; text-align: left; padding: 5px 8px 5px 9px; border-radius: var(--radius); background: var(--cb); border-left: 3px solid var(--ci); font-size: 12.5px; line-height: 1.3; cursor: grab; }
 .pal:hover { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ci) 45%, transparent); }
 .pal.is-on { box-shadow: inset 0 0 0 1.5px var(--ci); }
 .pal-code { font-weight: 600; color: var(--ci); }
-.pal-name { color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pal-meta { font-size: 11px; color: var(--ink-2); }
+.pal-name { grid-column: 1 / -1; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pal-meta { font-size: 11px; color: var(--ink-2); text-align: right; align-self: center; }
+.palette-sep { font-size: 11.5px; color: var(--muted); margin: 6px 0 0; }
 .tt-grid { min-width: 0; }
 .addcell {
   position: absolute; left: 3px; right: 3px; z-index: 1; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; gap: 4px;

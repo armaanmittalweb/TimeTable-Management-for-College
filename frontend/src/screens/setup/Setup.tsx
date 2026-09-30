@@ -70,7 +70,7 @@ export function SetupScreen({ full, step, reload }: { full: WorkspaceFull; step?
       <nav className="steps" aria-label="Setup steps">
         <div className="steps-head">
           <h1>Setup</h1>
-          <p className="mono">{count} of {STEPS.length} done</p>
+          <p>{count} of {STEPS.length} done</p>
           <div className="steps-bar" aria-hidden="true"><span style={{ width: `${(count / STEPS.length) * 100}%` }} /></div>
         </div>
         <ol>

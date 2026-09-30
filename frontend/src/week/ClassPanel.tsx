@@ -40,8 +40,8 @@ export const ClassPanel = forwardRef<HTMLHeadingElement, {
         <div>
           <dt><Icon name="clock" /> When</dt>
           <dd>
-            {dayLabel(o.date)}, <span className="mono">{o.start}–{o.end}</span>
-            <span className="cp-note">{duration(len)}</span>
+            {dayLabel(o.date)}
+            <span className="cp-note"><span className="mono">{o.start}–{o.end}</span> · {duration(len)}</span>
           </dd>
         </div>
         <div>
@@ -70,8 +70,8 @@ export const ClassPanel = forwardRef<HTMLHeadingElement, {
             {ch.kind === 'cancelled'
               ? `Cancelled for ${DAY_LONG[dow(ch.from.date)]} ${ch.from.date.slice(8)} only.`
               : o.status === 'moved-here'
-                ? `Moved here from ${dayLabel(ch.from.date)}, ${ch.from.start} in ${ch.from.room}.`
-                : `Moved to ${dayLabel(ch.to!.date)}, ${ch.to!.start} in ${ch.to!.room}.`}
+                ? <>Moved here from {dayLabel(ch.from.date)}, {ch.from.start} in <span className="nowrap">{ch.from.room}</span>.</>
+                : <>Moved to {dayLabel(ch.to!.date)}, {ch.to!.start} in <span className="nowrap">{ch.to!.room}</span>.</>}
           </p>
           {ch.reason && <p className="cp-change-reason">“{ch.reason}”</p>}
           <p className="cp-change-by">{ch.by} · {ago(ch.at)}</p>
@@ -107,7 +107,7 @@ export const ClassPanel = forwardRef<HTMLHeadingElement, {
         <p className="cp-regular">
           {cls ? (
             <>
-              {DAY_LONG[cls.day]}s, <span className="mono">{cls.start}–{cls.end}</span>, {regularRoom?.name}
+              {DAY_LONG[cls.day]}s, {cls.start}–{cls.end} in <span className="nowrap">{regularRoom?.name}</span>
             </>
           ) : (
             <>
