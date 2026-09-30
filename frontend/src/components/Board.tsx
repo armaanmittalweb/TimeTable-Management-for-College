@@ -99,7 +99,7 @@ export function Board(props: Props) {
         })}
       </div>
 
-      <div id={`${uid}-panel`} role="tabpanel" aria-labelledby={`${uid}-tab-${day}`} className="board-panel">
+      <div id={`${uid}-panel`} role="tabpanel" tabIndex={0} aria-labelledby={`${uid}-tab-${day}`} className="board-panel">
         <table className="board-table">
           <caption className="sr-only">
             {caption}, {longDate(date)}

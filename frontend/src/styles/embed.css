@@ -16,6 +16,8 @@
 }
 
 .embed-name {
+  margin: 0;
+  line-height: 1;
   font-family: var(--cond);
   font-weight: 700;
   font-size: 18px;
@@ -32,6 +34,7 @@
 }
 
 .embed .demo-note {
+  max-width: none;
   padding-top: 10px;
   border-top: 1px solid var(--hair);
 }
@@ -44,13 +47,17 @@
     border-top: 0;
     border-left: 1px solid var(--hair);
     padding-left: 18px;
-    margin-left: 18px;
+  }
+  .embed .view:first-child {
+    padding-right: 18px;
   }
 }
 
-@container (max-width: 480px) {
+/* Side by side under ~1250px there is no room for the fourth column; it is the least needed one. */
+@container (max-width: 1250px) {
   .embed .c-aux,
   .embed .col-aux {
     display: none;
   }
 }
+

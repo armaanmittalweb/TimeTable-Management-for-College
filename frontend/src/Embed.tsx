@@ -168,16 +168,16 @@ export default function Embed() {
 
   return (
     <div className="embed">
-      <div className="embed-bar">
-        <span className="embed-name">
+      <header className="embed-bar">
+        <h1 className="embed-name">
           EDUSCHED <span aria-hidden="true">·</span> LIVE DEMO
-        </span>
+        </h1>
         <div className="station-tools">
           <SoundToggle />
           <ResetButton demo={demo} label="RESET" />
           <SandboxTag id={demo.sandbox} />
         </div>
-      </div>
+      </header>
       <main className="split">
         <ControlRoom
           demo={demo}
@@ -191,9 +191,9 @@ export default function Embed() {
         />
         <Platform demo={demo} week={week} day={platformDay} onDay={setPlatformDay} compact />
       </main>
-      <p className="demo-note">
-        Public demo. Your changes are private to this browser and cleared after 24 hours.
-      </p>
+      <footer>
+        <p className="demo-note">Public demo. Your changes are private to this browser and cleared after 24 hours.</p>
+      </footer>
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {demo.announcement}
       </div>

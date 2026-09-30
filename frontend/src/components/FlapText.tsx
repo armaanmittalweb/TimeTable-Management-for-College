@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useReducedMotion } from '../motion';
 import { flap } from '../sound';
 
@@ -107,21 +107,37 @@ export function FlapText({ text, memo, label, delay = 0, className }: Props) {
     };
   }, [text, memo, reduced, delay]);
 
+  // Tiles are grouped into words that never break inside; a line may only wrap after a blank tile.
+  const parts: ReactNode[] = [];
+  let word: ReactNode[] = [];
+  const endWord = (i: number) => {
+    if (word.length) parts.push(<span key={`w${i}`} className="w">{word}</span>);
+    word = [];
+  };
+  cells.forEach((c, i) => {
+    const cls = c.gen ? 't f' : 't';
+    if (c.ch === ' ') {
+      endWord(i);
+      parts.push(
+        <Fragment key={`${i}:${c.gen}`}>
+          <span className={`${cls} sp`}> </span>
+          <wbr />
+        </Fragment>,
+      );
+    } else {
+      word.push(
+        <span key={`${i}:${c.gen}`} className={cls}>
+          {c.ch}
+        </span>,
+      );
+    }
+  });
+  endWord(cells.length);
+
   return (
     <span className={className ? `flap ${className}` : 'flap'}>
       <span className="flap-tiles" aria-hidden="true">
-        {cells.map((c, i) =>
-          c.ch === ' ' ? (
-            <Fragment key={`${i}:${c.gen}`}>
-              <span className={c.gen ? 't sp f' : 't sp'}> </span>
-              <wbr />
-            </Fragment>
-          ) : (
-            <span key={`${i}:${c.gen}`} className={c.gen ? 't f' : 't'}>
-              {c.ch}
-            </span>
-          ),
-        )}
+        {parts}
       </span>
       <span className="sr-only">{label ?? text}</span>
     </span>

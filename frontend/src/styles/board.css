@@ -27,6 +27,10 @@
   backface-visibility: hidden;
 }
 
+.w {
+  white-space: nowrap;
+}
+
 .t.sp {
   opacity: 0.55;
 }
@@ -108,6 +112,8 @@
 
 .board-panel {
   min-height: 150px;
+  /* last resort on very narrow screens: the table scrolls, never the page */
+  overflow-x: auto;
 }
 
 .board-table {
@@ -151,8 +157,10 @@
 }
 
 .c-status {
-  width: 1%;
-  min-width: 11ch;
+  /* wide enough for 'THU 09:00' (and so 'ON TIME') on one line; 'MOVED →' wraps above it */
+  width: calc(9 * (1ch + 7px) + 20px);
+  min-width: calc(9 * (1ch + 7px) + 20px);
+  font-size: var(--tile-size);
 }
 
 .course {
@@ -387,6 +395,16 @@
 }
 
 @media (max-width: 480px) {
+  .t {
+    min-width: calc(1ch + 3px);
+    margin-right: 1px;
+    padding: 0;
+  }
+  .c-status {
+    /* 'ON TIME' and 'MOVED →' fit; a moved time wraps under them */
+    width: calc(7 * (1ch + 5px) + 16px);
+    min-width: calc(7 * (1ch + 5px) + 16px);
+  }
   .c-aux,
   .col-aux {
     display: none;
@@ -400,7 +418,7 @@
   }
   .board-table thead th:first-child,
   .board-table tbody td:first-child {
-    padding-left: 4px;
+    padding-left: 8px;
   }
   .course-code {
     font-size: 14px;

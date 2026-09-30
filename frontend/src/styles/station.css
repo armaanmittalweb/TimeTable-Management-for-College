@@ -297,7 +297,7 @@
 @media (max-width: 480px) {
   :root {
     --gutter: 16px;
-    --tile-size: 13px;
+    --tile-size: 12px;
   }
   body {
     font-size: 14px;
