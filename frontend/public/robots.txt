@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /w/
+Disallow: /b/
+Disallow: /embed
+Disallow: /settings
+
+Sitemap: https://edusched.amittal.dev/sitemap.xml

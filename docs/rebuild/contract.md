@@ -71,6 +71,7 @@ All JSON, prefix `/api`. `W` = `/api/w/:slug`. `(C)` coordinator only, `(T)` tea
 | POST /api/auth/login | `{email,password}` → `Me`, sets cookie. 401 with one generic message |
 | POST /api/auth/logout | → 204, clears cookie, deletes the session |
 | GET /api/auth/me | → `Me` or 401 |
+| PATCH /api/auth/me | `{name?, email?}` → `Me` (settings → profile). 409 `conflict` if the email belongs to another account. **Requested by the app, not in `api/` yet** |
 | GET /api/auth/sessions | → `SessionInfo[]` (current one flagged) |
 | DELETE /api/auth/sessions/:id | → 204 (sign out another device) |
 | POST /api/auth/password | `{current,next}` → 204, other sessions revoked |
@@ -87,10 +88,11 @@ All JSON, prefix `/api`. `W` = `/api/w/:slug`. `(C)` coordinator only, `(T)` tea
 | POST W/publish, POST W/unpublish | (C) |
 | PUT W/periods | `Period[]` replace all (C) |
 | GET/POST W/rooms, PATCH/DELETE W/rooms/:id | (C for writes) |
-| same for W/teachers, W/batches, W/courses, W/classes | Deleting something in use → 409 `conflict` naming what uses it. POST W/batches generates the code; POST W/batches/:id/code rotates it. Creating or editing a class runs the same clash check and returns 409 `clash` |
+| same for W/teachers, W/batches, W/courses, W/classes | POST takes the shape without `id` (and without `hasAccount` / `code`, which the server sets) → 201 with the created object; PATCH takes any subset of those fields → the updated object; GET → the array. Deleting something in use → 409 `conflict` naming what uses it. POST W/batches generates the code; POST W/batches/:id/code rotates it. Creating or editing a class runs the same clash check and returns 409 `clash` |
 | POST W/import | `{kind:'rooms'\|'teachers'\|'batches'\|'courses'\|'classes', csv:string, dryRun:boolean}` → `ImportReport`. Classes CSV columns: `day,start,end,course,batch,room,teacher?` (day as Mon..Sun or 1..7; course/batch/room/teacher by code/name). Nothing is written if any row fails (C) |
 | GET W/import/template/:kind | → text/csv with the header and two example rows |
-| GET W/members, DELETE W/members/:userId, PATCH W/members/:userId `{role}` | (C) |
+| GET W/members, DELETE W/members/:userId, PATCH W/members/:userId `{role}` | → `Member[]` / 204 / `Member` (C) |
+| GET W/invites, DELETE W/invites/:code | → `Invite[]` (unused and unexpired, newest first) / 204 revoke (C). **Requested by the app, not in `api/` yet** |
 | POST W/invites | `{role,teacherId?}` → `{code, expiresAt}` (7 days) (C) |
 | POST W/members/:userId/reset-code | → `{code, expiresAt}` (1 hour, single use) (C) |
 | POST /api/join | `{code}`: a teacher invite (requires a signed-in user; creates the membership) → `{workspace: WorkspaceSummary}`; or a batch code (no session needed) → `FollowedBatch` |
@@ -102,7 +104,7 @@ All JSON, prefix `/api`. `W` = `/api/w/:slug`. `(C)` coordinator only, `(T)` tea
 | GET W/today?batch=\|teacher= | → `Occurrence[]` for today in the workspace timezone |
 | GET W/changes?start=&end= | → `Change[]` newest first (M) |
 | GET W/free-rooms?date&start&end&exclude=classId | → `Room[]` (M) |
-| GET W/classes/:id/slots?week=YYYY-MM-DD | → `SlotAvailability[]` for every shown day × non-break period of that week from today on: whether the teacher or the batch is busy, and the free rooms that fit the batch (T) |
+| GET W/classes/:id/slots?week=YYYY-MM-DD | → `SlotAvailability[]` for every shown day × non-break period of that week from today on: whether the teacher or the batch is busy, and the free rooms that fit the batch (T). Each slot starts at a period start and lasts as long as the class (a 2-hour lab spans two periods); slots that would run into a break or past the last period, or that have already started, are left out. The class's own occurrence that week does not make the teacher, batch or its room busy |
 | POST W/classes/:id/cancel | `{date, reason?}` → 201 `Change` (T own). 409 `conflict` if that occurrence already changed |
 | POST W/classes/:id/move | `{date, toDate, toStart, toEnd, roomId, reason?}` → 201 `Change`; 409 `clash` with `{clashes: Clash[], suggestion: SlotAvailability \| null}` (the next free slot the same day or later that week) (T own) |
 | DELETE W/changes/:id | undo → 204 (T own, or C) |
@@ -126,6 +128,7 @@ Codes are case-insensitive, formatted `<BATCH>-<4 chars>` from an alphabet witho
 | Method, path | |
 |---|---|
 | POST /api/demo | → 201 `Me` with a guest session (no user row: `sessions.demo_workspace_id` set) and a fresh copy of the demo college, `expires_at` now + 24 h, acting as coordinator. Rate limit 5 per 10 minutes per IP |
+| GET /api/demo/week?start=&batch=<name> | → `Week` of the demo college, no session (front page and `/embed`); see “Decisions made while building the API” |
 | POST W/demo/act-as | `{role:'coordinator'}` \| `{role:'teacher',teacherId}` \| `{role:'student',batchId}` → `Me`. Only on your own demo workspace |
 
 The demo college extends the current seed (a CS/ECE department: CSE-2A, CSE-2B, ECE-2A, five teachers, six rooms) so each batch has a full Mon–Fri week with a lunch break and a lab block, plus 3 changes placed in the current week at copy time (one cancelled, two moved) so the Changes screen is never empty. Keep it as data (`api/db/demo.json` or SQL) and clone it in one transaction. The hourly cron deletes expired demo workspaces and expired sessions.
@@ -178,6 +181,7 @@ export interface FollowedBatch { code: string; workspace: { name: string; instit
 export interface SessionInfo { id: string; current: boolean; userAgent: string | null; createdAt: string; lastSeenAt: string }
 export interface ImportReport { ok: boolean; created: number; updated: number; errors: { line: number; column?: string; message: string }[] }
 export interface Member { userId: number; name: string; email: string; role: 'coordinator' | 'teacher'; teacherId: number | null }
+export interface Invite { code: string; role: 'teacher' | 'coordinator'; teacherId: number | null; expiresAt: string; createdAt: string }   // requested by the app, see the last section
 ```
 
 ## Limits (free tier)
@@ -227,3 +231,9 @@ Gaps the sections above left open, and how `api/` fills them. Where one of these
 
 **Switchboard**
 - `/internal/stats` → `{dbBytes, users, changes, demoCopies, workspaces}` (`demoCopies` = live demo copies, `workspaces` = real ones). `/internal/cleanup` → `{deleted, demoCopies, sessions, changes, codes}`, `deleted` being the total.
+
+## Requested by the app (not in `api/` yet)
+
+The app calls these and degrades without them (the pending-invites list stays hidden; saving the profile shows the API's error). `frontend/src/contract.ts` has `Invite`; add it to `api/src/contract.ts` with the routes.
+- `GET W/invites` → `Invite[]` (unused, unexpired, newest first) and `DELETE W/invites/:code` → 204 (C): list and revoke outstanding teacher/coordinator invites in Setup → Codes and members.
+- `PATCH /api/auth/me` `{name?, email?}` → `Me`; 409 `conflict` if the email belongs to another account (Settings → Profile).

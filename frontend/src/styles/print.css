@@ -1,0 +1,23 @@
+/* Print: the current week on one A4 landscape page, in ink on white. */
+@page { size: A4 landscape; margin: 10mm; }
+@media print {
+  :root, [data-theme="dark"] {
+    --bg: #fff; --bg-rail: #fff; --bg-today: #fff; --ink: #000; --ink-2: #222; --muted: #444; --faint: #666;
+    --line: #bbb; --line-strong: #888; --row: 44px;
+    color-scheme: light;
+  }
+  body { font-size: 11px; background: #fff; }
+  .top, .demobar, .tabbar, .notice, .rail, .toasts, .confirm, .skip-link, .sub-right, .sub-filter .seg, .sub-week .btn, .front-bar, .front-text, .front-foot, .front-context-note { display: none !important; }
+  .sub { position: static; border: 0; padding: 0 0 6px; min-height: 0; }
+  .sub-range { text-align: left; font-size: 14px; }
+  .sub-filter { border: 0; padding: 0; }
+  .sub-pick { border: 0; padding: 0; background: none; font-weight: 600; }
+  .week-body.has-rail { grid-template-columns: 1fr; }
+  .tg-scroll { overflow: visible; }
+  .tg { min-width: 0 !important; grid-template-columns: 44px repeat(var(--cols, 5), 1fr) !important; zoom: 0.8; }
+  .tg-col.is-today, .tg-head.is-today { background: none; }
+  .tg-now, .tg-now-label { display: none; }
+  .blk { border: 1px solid #999; border-left-width: 3px; break-inside: avoid; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .tg-break { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .week-grid { padding: 0; }
+}

@@ -1,0 +1,43 @@
+:root {
+  --bg: #ffffff; --bg-rail: #f6f7f9; --bg-today: #f3f6fd; --bg-hover: #f1f3f6; --bg-sunken: #eef0f3;
+  --ink: #172033; --ink-2: #3a4458; --muted: #667085; --faint: #98a2b3;
+  --line: #e4e7ec; --line-strong: #d0d5dd;
+  --navy: #1f3a6e; --navy-ink: #ffffff; --focus: #3b5bab;
+  --now: #d92d20; --danger: #b42318; --changed: #b54708; --changed-bg: #fef6e7; --ok: #067647;
+  /* course colours: background / border+text */
+  --c1: #dbe6fb; --c1-ink: #2c4a94;  --c2: #e3f1e6; --c2-ink: #2b6b40;  --c3: #f6ead9; --c3-ink: #8a5210;  --c4: #efe4f6; --c4-ink: #6d3a8a;
+  --c5: #fbe3e1; --c5-ink: #9b2c24;  --c6: #dff2f2; --c6-ink: #1f6464;  --c7: #f3efd6; --c7-ink: #6b5e14;  --c8: #e7e9ee; --c8-ink: #3f4a5e;
+  --radius: 6px; --radius-lg: 8px;
+  --f-sans: 'IBM Plex Sans', system-ui, sans-serif; --f-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --row: 56px;        /* one hour in the week grid */
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  --bg: #12161f; --bg-rail: #171c27; --bg-today: #1a2335; --bg-hover: #1d2330; --bg-sunken: #0e121a;
+  --ink: #e6e9f0; --ink-2: #c3c9d5; --muted: #98a2b3; --faint: #667085;
+  --line: #262d3b; --line-strong: #323b4d;
+  --navy: #9db4ea; --navy-ink: #0e1422; --focus: #9db4ea;
+  --now: #f97066; --danger: #f97066; --changed: #f5b453; --changed-bg: #2e2413; --ok: #75e0a7;
+  --c1: #22335a; --c1-ink: #b3c8f7;  --c2: #1d3727; --c2-ink: #9ad8ae;  --c3: #3a2c19; --c3-ink: #f0c68a;  --c4: #33253e; --c4-ink: #d7b3ee;
+  --c5: #3d2220; --c5-ink: #f4aaa3;  --c6: #173434; --c6-ink: #93d6d6;  --c7: #34301a; --c7-ink: #e3d58e;  --c8: #262b36; --c8-ink: #c3c9d5;
+  color-scheme: dark;
+}
+
+/* Derived tokens (not in the brief's block): shadows for floating things only, and the hatch used
+   for breaks and cancelled classes. */
+:root {
+  --shadow-pop: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px -4px rgba(16, 24, 40, 0.14);
+  --shadow-ghost: 0 2px 4px rgba(16, 24, 40, 0.1), 0 12px 28px -6px rgba(16, 24, 40, 0.28);
+  --hatch: color-mix(in srgb, var(--faint) 22%, transparent);
+  --scrim: rgba(16, 24, 40, 0.32);
+  --free: color-mix(in srgb, var(--navy) 7%, var(--bg));
+  --free-line: color-mix(in srgb, var(--navy) 45%, var(--bg));
+}
+[data-theme="dark"] {
+  --shadow-pop: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -4px rgba(0, 0, 0, 0.6);
+  --shadow-ghost: 0 2px 6px rgba(0, 0, 0, 0.5), 0 14px 30px -6px rgba(0, 0, 0, 0.7);
+  --hatch: color-mix(in srgb, var(--faint) 30%, transparent);
+  --scrim: rgba(0, 0, 0, 0.55);
+  --free: color-mix(in srgb, var(--navy) 10%, var(--bg));
+  --free-line: color-mix(in srgb, var(--navy) 55%, var(--bg));
+}
