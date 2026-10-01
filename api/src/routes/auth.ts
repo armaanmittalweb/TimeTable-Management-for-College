@@ -16,6 +16,7 @@ import {
   redeemResetCode,
   replaceFollows,
   setPassword,
+  updateProfile,
 } from '../data/accounts';
 import type { AppEnv } from '../env';
 import { badRequest, conflict, HttpError, notFound, unauthenticated } from '../http';
@@ -66,6 +67,19 @@ auth.post('/auth/logout', async (c) => {
 });
 
 auth.get('/auth/me', async (c) => c.json(await getMe(c.var.db, requireSession(c))));
+
+auth.patch('/auth/me', async (c) => {
+  const s = requireUser(c);
+  const body = await readBody(c);
+  const profile = {
+    name: body.name === undefined ? undefined : text(body.name, 'name', 80),
+    email: body.email === undefined ? undefined : email(body.email),
+  };
+  if ((await updateProfile(c.var.db, s.userId, profile)) === 'taken') {
+    throw conflict('Another account already uses that email.');
+  }
+  return c.json(await getMe(c.var.db, accountOnly(s.userId)));
+});
 
 auth.get('/auth/sessions', async (c) => {
   const s = requireUser(c);

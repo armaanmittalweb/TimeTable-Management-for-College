@@ -71,7 +71,7 @@ All JSON, prefix `/api`. `W` = `/api/w/:slug`. `(C)` coordinator only, `(T)` tea
 | POST /api/auth/login | `{email,password}` → `Me`, sets cookie. 401 with one generic message |
 | POST /api/auth/logout | → 204, clears cookie, deletes the session |
 | GET /api/auth/me | → `Me` or 401 |
-| PATCH /api/auth/me | `{name?, email?}` → `Me` (settings → profile). 409 `conflict` if the email belongs to another account. **Requested by the app, not in `api/` yet** |
+| PATCH /api/auth/me | `{name?, email?}` → `Me` (settings → profile). 409 `conflict` if the email belongs to another account. |
 | GET /api/auth/sessions | → `SessionInfo[]` (current one flagged) |
 | DELETE /api/auth/sessions/:id | → 204 (sign out another device) |
 | POST /api/auth/password | `{current,next}` → 204, other sessions revoked |
@@ -92,7 +92,7 @@ All JSON, prefix `/api`. `W` = `/api/w/:slug`. `(C)` coordinator only, `(T)` tea
 | POST W/import | `{kind:'rooms'\|'teachers'\|'batches'\|'courses'\|'classes', csv:string, dryRun:boolean}` → `ImportReport`. Classes CSV columns: `day,start,end,course,batch,room,teacher?` (day as Mon..Sun or 1..7; course/batch/room/teacher by code/name). Nothing is written if any row fails (C) |
 | GET W/import/template/:kind | → text/csv with the header and two example rows |
 | GET W/members, DELETE W/members/:userId, PATCH W/members/:userId `{role}` | → `Member[]` / 204 / `Member` (C) |
-| GET W/invites, DELETE W/invites/:code | → `Invite[]` (unused and unexpired, newest first) / 204 revoke (C). **Requested by the app, not in `api/` yet** |
+| GET W/invites, DELETE W/invites/:code | → `Invite[]` (unused and unexpired, newest first) / 204 revoke (C). |
 | POST W/invites | `{role,teacherId?}` → `{code, expiresAt}` (7 days) (C) |
 | POST W/members/:userId/reset-code | → `{code, expiresAt}` (1 hour, single use) (C) |
 | POST /api/join | `{code}`: a teacher invite (requires a signed-in user; creates the membership) → `{workspace: WorkspaceSummary}`; or a batch code (no session needed) → `FollowedBatch` |
@@ -232,8 +232,8 @@ Gaps the sections above left open, and how `api/` fills them. Where one of these
 **Switchboard**
 - `/internal/stats` → `{dbBytes, users, changes, demoCopies, workspaces}` (`demoCopies` = live demo copies, `workspaces` = real ones). `/internal/cleanup` → `{deleted, demoCopies, sessions, changes, codes}`, `deleted` being the total.
 
-## Requested by the app (not in `api/` yet)
+## Requested by the app (implemented)
 
-The app calls these and degrades without them (the pending-invites list stays hidden; saving the profile shows the API's error). `frontend/src/contract.ts` has `Invite`; add it to `api/src/contract.ts` with the routes.
+Both are in `api/` now; `Invite` is in both copies of `contract.ts`. Invites carry `created_at`.
 - `GET W/invites` → `Invite[]` (unused, unexpired, newest first) and `DELETE W/invites/:code` → 204 (C): list and revoke outstanding teacher/coordinator invites in Setup → Codes and members.
 - `PATCH /api/auth/me` `{name?, email?}` → `Me`; 409 `conflict` if the email belongs to another account (Settings → Profile).

@@ -43,3 +43,4 @@ export interface FollowedBatch { code: string; workspace: { name: string; instit
 export interface SessionInfo { id: string; current: boolean; userAgent: string | null; createdAt: string; lastSeenAt: string }
 export interface ImportReport { ok: boolean; created: number; updated: number; errors: { line: number; column?: string; message: string }[] }
 export interface Member { userId: number; name: string; email: string; role: 'coordinator' | 'teacher'; teacherId: number | null }
+export interface Invite { code: string; role: 'teacher' | 'coordinator'; teacherId: number | null; expiresAt: string; createdAt: string }

@@ -218,6 +218,34 @@ describe('sessions and passwords', () => {
   });
 });
 
+describe('profile and invites', () => {
+  it('updates the name and email, refusing an email another account uses', async () => {
+    const a = await h.signup('Asha');
+    const b = await h.signup('Bilal');
+    const me = expectStatus(await a.patch('/api/auth/me', { name: 'Asha Rao', email: 'Asha.Rao@Example.edu' }), 200);
+    expect(me.user).toMatchObject({ name: 'Asha Rao', email: 'asha.rao@example.edu' });
+    expect((await b.patch('/api/auth/me', { email: 'asha.rao@example.edu' })).status).toBe(409);
+    expect((await h.browser().post('/api/auth/login', { email: 'asha.rao@example.edu', password: PASSWORD })).status).toBe(200);
+  });
+
+  it('lists pending invites newest first and revokes them', async () => {
+    const coord = await h.signup();
+    const college = await buildCollege(coord);
+    const first = expectStatus(await coord.post(`${college.w}/invites`, { role: 'teacher', teacherId: college.teachers.t1 }), 201);
+    const second = expectStatus(await coord.post(`${college.w}/invites`, { role: 'coordinator' }), 201);
+    const pending = expectStatus(await coord.get(`${college.w}/invites`), 200);
+    expect(pending.map((i: { code: string }) => i.code).sort()).toEqual([first.code, second.code].sort());
+    expect(pending.find((i: { code: string }) => i.code === first.code)).toMatchObject({ role: 'teacher', teacherId: college.teachers.t1 });
+
+    expect((await coord.del(`${college.w}/invites/${second.code.toLowerCase()}`)).status).toBe(204);
+    expect((await coord.del(`${college.w}/invites/${second.code}`)).status).toBe(404);
+    const t = await h.signup();
+    expect((await t.post('/api/join', { code: second.code })).status).toBe(404);
+    expect((await t.post('/api/join', { code: first.code })).status).toBe(200);
+    expect(expectStatus(await coord.get(`${college.w}/invites`), 200)).toEqual([]);
+  });
+});
+
 describe('account deletion', () => {
   it('deletes the account and the workspaces only they belong to', async () => {
     const a = await h.signup();

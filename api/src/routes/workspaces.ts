@@ -13,8 +13,10 @@ import {
   getSummary,
   getWorkspaceFull,
   isMember,
+  listInvites,
   listMembers,
   replacePeriods,
+  revokeInvite,
   setPublished,
   slugTaken,
   updateWorkspace,
@@ -23,7 +25,7 @@ import { isTimeZone } from '../dates';
 import type { AppEnv } from '../env';
 import { badRequest, conflict, notFound } from '../http';
 import { requireUser } from '../session';
-import { inviteCode, randomCode, resetCode, sha256Hex } from '../tokens';
+import { inviteCode, normalizeCode, randomCode, resetCode, sha256Hex } from '../tokens';
 import { id, oneOf, optId, optText, pathId, readArray, readBody, text, time } from '../validate';
 
 const workspaces = new Hono<AppEnv>();
@@ -162,6 +164,19 @@ workspaces.post('/w/:slug/invites', async (c) => {
   const code = inviteCode();
   const expiresAt = await createInvite(c.var.db, { code, workspaceId: ws.id, role, teacherId, userId: c.var.session!.userId });
   return c.json({ code, expiresAt }, 201);
+});
+
+workspaces.get('/w/:slug/invites', async (c) => {
+  const ws = requireCoordinator(c);
+  return c.json(await listInvites(c.var.db, ws.id));
+});
+
+workspaces.delete('/w/:slug/invites/:code', async (c) => {
+  const ws = requireCoordinator(c);
+  if (!(await revokeInvite(c.var.db, ws.id, normalizeCode(c.req.param('code'))))) {
+    throw notFound('That invite does not exist or has already been used.');
+  }
+  return c.body(null, 204);
 });
 
 workspaces.post('/w/:slug/members/:userId/reset-code', async (c) => {

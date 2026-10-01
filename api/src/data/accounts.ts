@@ -34,6 +34,21 @@ export async function createUser(db: Queryable, u: { email: string; name: string
   return row?.id ?? null;
 }
 
+/** 'ok', or 'taken' when the new email belongs to another account. */
+export async function updateProfile(db: Queryable, userId: number, p: { name?: string; email?: string }) {
+  try {
+    await db.query(`UPDATE users SET name = COALESCE($2, name), email = COALESCE($3, email) WHERE id = $1`, [
+      userId,
+      p.name ?? null,
+      p.email ?? null,
+    ]);
+    return 'ok' as const;
+  } catch (err) {
+    if ((err as { code?: string }).code === '23505') return 'taken' as const;
+    throw err;
+  }
+}
+
 export async function setPassword(db: Queryable, userId: number, passwordHash: string) {
   await db.query(`UPDATE users SET password_hash = $2 WHERE id = $1`, [userId, passwordHash]);
 }

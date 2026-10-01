@@ -65,6 +65,8 @@ function routes(c: College): [string, string, unknown?][] {
     ['PATCH', `${w}/members/1`, { role: 'teacher' }],
     ['DELETE', `${w}/members/1`],
     ['POST', `${w}/invites`, { role: 'coordinator' }],
+    ['GET', `${w}/invites`],
+    ['DELETE', `${w}/invites/INV-AAAAAAAAAA`],
     ['POST', `${w}/members/1/reset-code`],
     ['GET', `${w}/week`],
     ['GET', `${w}/today`],

@@ -181,7 +181,8 @@ CREATE TABLE invites (
     created_by    integer REFERENCES users (id) ON DELETE SET NULL,
     expires_at    timestamptz NOT NULL,
     used_by       integer REFERENCES users (id) ON DELETE SET NULL,
-    used_at       timestamptz
+    used_at       timestamptz,
+    created_at    timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX invites_ws_idx ON invites (workspace_id);
 

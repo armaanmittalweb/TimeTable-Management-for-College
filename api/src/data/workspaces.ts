@@ -1,6 +1,6 @@
 // Workspaces, membership, invites.
 
-import type { Member, Period, Role, WorkspaceFull, WorkspaceSummary } from '../contract';
+import type { Invite, Member, Period, Role, WorkspaceFull, WorkspaceSummary } from '../contract';
 import type { Db, Queryable } from '../db';
 import type { Session, WorkspaceCtx } from '../env';
 import { HM, ISO, SUMMARY } from './sql';
@@ -242,6 +242,26 @@ export async function createInvite(
     [i.code, i.workspaceId, i.role, i.teacherId, i.userId],
   );
   return row.expires_at;
+}
+
+/** Unused, unexpired invites, newest first. */
+export function listInvites(db: Queryable, workspaceId: number) {
+  return db.query<Invite>(
+    `SELECT code, role, teacher_id AS "teacherId", ${ISO('expires_at')} AS "expiresAt", ${ISO('created_at')} AS "createdAt"
+       FROM invites
+      WHERE workspace_id = $1 AND used_at IS NULL AND expires_at > now()
+      ORDER BY created_at DESC, code`,
+    [workspaceId],
+  );
+}
+
+/** True when an unused invite was revoked. */
+export async function revokeInvite(db: Queryable, workspaceId: number, code: string) {
+  const rows = await db.query(`DELETE FROM invites WHERE workspace_id = $1 AND code = $2 AND used_at IS NULL RETURNING 1`, [
+    workspaceId,
+    code,
+  ]);
+  return rows.length > 0;
 }
 
 export type InviteResult =
