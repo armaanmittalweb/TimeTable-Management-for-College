@@ -5,7 +5,7 @@
   display: grid; grid-template-rows: auto auto; position: relative; min-width: min-content;
   background: var(--bg);
 }
-.tg-corner { position: sticky; left: 0; z-index: 4; background: var(--bg); border-bottom: 1px solid var(--line); }
+.tg-corner { position: sticky; left: 0; z-index: 9; background: var(--bg); border-bottom: 1px solid var(--line); }
 .tg-head {
   display: flex; align-items: baseline; gap: 6px; height: 48px; padding: 0 10px;
   border-left: 1px solid var(--line); border-bottom: 1px solid var(--line);
@@ -22,7 +22,7 @@
 .tg-count { margin-left: auto; font: 400 11.5px var(--f-mono); color: var(--faint); }
 .tg-head .dot { margin-left: auto; }
 
-.tg-rail { position: sticky; left: 0; z-index: 3; background: var(--bg); border-right: 0; }
+.tg-rail { position: sticky; left: 0; z-index: 8; background: var(--bg); border-right: 0; }
 .tg-time {
   position: absolute; right: 8px; transform: translateY(-7px);
   display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15;
