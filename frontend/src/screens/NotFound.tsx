@@ -22,7 +22,7 @@ export function NotFound({ inline }: { inline?: boolean }) {
     </div>
   );
   if (inline) return body;
-  return <div className="auth">{body}</div>;
+  return <main id="main" className="auth">{body}</main>;
 }
 
 /** A workspace or batch we can't show: missing, not a member, not published. */

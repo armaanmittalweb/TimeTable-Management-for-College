@@ -20,6 +20,8 @@ ul, ol { padding: 0; list-style: none; }
 h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.005em; }
 a { color: var(--navy); text-decoration: none; }
 a:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* Links inside sentences are underlined so they don't rely on colour alone. */
+p a, .notice a, .auth-foot a, .auth-sub a, .field-hint a { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: 0; padding: 0; }
 button:disabled { cursor: default; }
@@ -100,7 +102,7 @@ kbd, .kbd {
   background: var(--bg-sunken); color: var(--ink-2);
 }
 .chip-changed { background: var(--changed-bg); color: var(--changed); }
-.chip-now { background: color-mix(in srgb, var(--now) 12%, var(--bg)); color: var(--now); }
+.chip-now { background: color-mix(in srgb, var(--now) 10%, var(--bg)); color: var(--danger); }
 .chip-ok { background: color-mix(in srgb, var(--ok) 12%, var(--bg)); color: var(--ok); }
 .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--changed); flex: none; display: inline-block; }

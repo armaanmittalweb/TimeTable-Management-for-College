@@ -88,11 +88,11 @@ export function Embed() {
   return (
     <div className="embed">
       <header className="embed-bar">
-        <a className="top-brand" href="/" target="_blank" rel="noopener">
+        <a className="top-brand" href="/" target="_blank" rel="noopener" aria-label="EduSched (opens in a new tab)">
           <Mark />
           <span className="top-word">EduSched</span>
         </a>
-        <span className="embed-what"><b>CSE-2A</b> · demo college · {rangeLabel(start, week?.end ?? start)}</span>
+        <h1 className="embed-what"><b>CSE-2A</b> · demo college · {rangeLabel(start, week?.end ?? start)}</h1>
         {changes > 0 && <span className="embed-changes"><span className="dot" aria-hidden="true" /> {plural(changes, 'change')} this week</span>}
         <a className="btn btn-sm btn-primary embed-open" href="/demo" target="_blank" rel="noopener">Open the demo</a>
       </header>

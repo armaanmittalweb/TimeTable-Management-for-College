@@ -32,7 +32,7 @@
 .tg-time:first-child .tg-time.is-hidden { visibility: hidden; }
 .tg-pidx { transform: translateY(7px); }
 .tg-time.is-hidden { visibility: hidden; }
-.tg-pidx { font: 500 10px var(--f-mono); color: var(--faint); }
+.tg-pidx { font: 500 10px var(--f-mono); color: var(--muted); }
 .tg-time.is-break .mono { color: var(--faint); }
 .tg-now-label {
   position: absolute; right: 4px; transform: translateY(-50%); z-index: 2;
@@ -125,6 +125,7 @@
 }
 .drag-ghost b { color: var(--ci); display: block; }
 
+[aria-busy="true"].tg-scroll { overflow: hidden; }
 .tg.is-skeleton .tg-head { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; }
 .tg-skel { position: absolute; left: 3px; right: 3px; border-radius: var(--radius); }
 

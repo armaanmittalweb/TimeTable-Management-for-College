@@ -281,7 +281,7 @@ for (const [name, run] of Object.entries(scenes)) {
       const { ctx, page } = await context(size, theme);
       try {
         await run(page, `${size}-${theme}`);
-        if (theme === 'light') await axe(page, `${name} ${size}`);
+        if (theme === 'light' && page.url() !== 'about:blank') await axe(page, `${name} ${size}`);
       } catch (e) {
         console.error(`  FAILED ${name} ${size} ${theme}: ${e.message.split('\n')[0]}`);
         await page.screenshot({ path: `${OUT}FAILED-${name}-${size}-${theme}.png` }).catch(() => undefined);

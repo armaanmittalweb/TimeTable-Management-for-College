@@ -156,7 +156,7 @@ export const TimeGrid = forwardRef<HTMLDivElement, GridProps>(function TimeGrid(
   };
 
   return (
-    <div className={`tg-scroll ${className}`} ref={scroller}>
+    <div className={`tg-scroll ${className}`} ref={scroller} tabIndex={all.length ? undefined : 0} aria-label={all.length ? undefined : label}>
       <div
         className={`tg${compact ? ' is-compact' : ''}`}
         style={{ gridTemplateColumns: `var(--rail) repeat(${columns.length}, minmax(${colMin}px, 1fr))`, ['--cols' as string]: columns.length }}
