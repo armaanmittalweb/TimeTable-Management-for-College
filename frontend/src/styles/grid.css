@@ -137,3 +137,7 @@
   .tg { --rail: 50px; }
   .tg-time { right: 6px; }
 }
+
+/* Two classes side by side (a moved class next to the one it replaced): drop the tags, keep code and room. */
+.blk.is-narrow .blk-tag { display: none; }
+.blk.is-narrow { padding-left: 6px; padding-right: 5px; }

@@ -72,7 +72,7 @@ function Block({ o, lane, lanesN, from, px, meta, selected, tabbable, moving, di
   return (
     <button
       type="button"
-      className={`blk c${o.course.color} is-${o.status}${selected ? ' is-selected' : ''}${short ? ' is-short' : ''}${moving ? ' is-moving' : ''}${dim ? ' is-dim' : ''}`}
+      className={`blk c${o.course.color} is-${o.status}${selected ? ' is-selected' : ''}${short ? ' is-short' : ''}${moving ? ' is-moving' : ''}${dim ? ' is-dim' : ''}${lanesN > 1 ? ' is-narrow' : ''}`}
       style={{ top, height, left: `calc(${lane * w}% + 3px)`, width: `calc(${w}% - ${lanesN > 1 ? 4 : 6}px)` }}
       data-key={o.key}
       data-start={s}

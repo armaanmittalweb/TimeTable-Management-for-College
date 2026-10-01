@@ -1,58 +1,69 @@
-# EduSched frontend
+# EduSched app
 
-The college timetable as a railway departures board. The **control room** on the left is Prof. Meera's view,
-where classes are cancelled or moved. The **platform** on the right is student CSE-2A's view, and it flips when
-a change lands. Both demo accounts are signed in on load. `/embed` is a compact version for the portfolio's Lab.
+The timetable a department runs on. The home screen is the week grid: one batch, teacher or room per view, with
+cancelled and moved classes shown for that day only. Coordinators set the department up (rooms, teachers, batches,
+courses, the week, codes, publish); teachers reschedule their own classes with clash-checked free slots; students
+follow their batch with a class code and need no account.
 
-TypeScript, React 19 and Vite, with plain CSS custom properties. There is no UI kit and no animation or chart
-library. The split-flap animation uses CSS transforms, and the flap sound is synthesized with Web Audio.
+React 19, TypeScript and Vite, plain CSS on the tokens in `src/styles/tokens.css` (IBM Plex, self-hosted). No UI
+kit, no router library, no animation library. The API contract is `../docs/rebuild/contract.md`; `src/contract.ts`
+is a copy of its Shapes block.
 
 ## Run locally
 
 ```sh
-cd api && npm install && npm run dev:local      # API on http://localhost:8787 (PGlite in memory, seeded)
-cd frontend && npm install && npm run dev       # http://localhost:5173
+npm install
+VITE_API=mock npm run dev                              # everything in the browser: an in-memory API with a demo college
+VITE_API_URL=http://localhost:8787 npm run dev         # against the real API (cd ../api && npm run dev:local)
 ```
 
-The dev server has to run on port 5173 because that is the local origin the API's CORS allows. Copy
-`.env.example` to `.env` to point at a different API.
+The dev server must stay on port 5173 (the API's CORS list). With the mock, sign in as
+`priya.menon@riverside.edu` (coordinator) or `meera.iyer@riverside.edu` (teacher), password `timetable-demo`, or open
+the demo from the front page. The mock keeps its state in `localStorage` (`edusched.mock.*`); `window.__esMock.reset()`
+starts over. It is only bundled when `VITE_API=mock`.
 
-| script           | what it does                                                     |
-|------------------|------------------------------------------------------------------|
-| `npm run build`  | typecheck, then build to `dist/`                                 |
-| `npm run shots`  | screenshots + axe check of a running dev server (see below)      |
+| script            | what it does                                                                    |
+|-------------------|---------------------------------------------------------------------------------|
+| `npm run build`   | typecheck, then build to `dist/`                                                |
+| `npm run shots`   | screenshots + axe of every screen against a running mock dev server (below)     |
 
-`scripts/shots.mjs` starts nothing itself. With the API and `npm run dev` running, it drives Chromium through the
-initial board, a postpone, a 409, the race, the phone control room and `/embed`. It writes PNGs to
-`scripts/shots/` (gitignored) and prints any axe violations. It needs Chromium installed once with
-`npx playwright install chromium`.
+`npm run shots` drives Chromium through every screen at 1440×900 and 390×844, light and dark, with the clock pinned to
+Wed 30 Sep 2026 11:20 IST, and writes `shots/<scene>-<size>-<theme>.png` (gitignored) plus `shots/axe.json`. It
+exits non-zero on any axe violation. `ONLY=<regex>` runs some scenes, `THEMES=light`, `SIZES=phone`, `AXE=0` narrow it.
+Chromium once: `npx playwright install chromium`.
+
+## Routes
+
+`/` front page (the demo college's week, read-only) · `/demo` opens a private 24-hour copy · `/w/:slug` week (Today on
+phones) with `/week`, `/today`, `/changes`, `/rooms`, `/setup/:step` · `/b/:code` a followed batch (week, today,
+changes) · `/join[/:code]` · `/signin`, `/signup`, `/forgot`, `/settings`, `/new` · `/embed` · anything else is a 404.
+The week takes `?week=YYYY-MM-DD&batch|teacher|room=ID`.
+
+Keyboard: `←`/`→` week, `T` today, `/` search, `?` shortcuts, `Esc` closes; in the grid, arrows move between
+classes and Enter opens one.
+
+## Offline
+
+`public/sw.js` keeps the app shell (HTML, hashed assets, fonts, icons). Data is not cached by the worker: the app keeps
+the last-seen copy of each week in `localStorage` (`edusched.cache.<code>.<weekStart>` for students,
+`edusched.cache.w.<slug>.<filter>.<weekStart>` for members) and shows "Offline · showing the copy from 10:42".
+Followed batches live in `localStorage['edusched.follows']` and sync to the account after sign-in.
 
 ## Environment
 
-| name                        | required | value                                                         |
-|-----------------------------|----------|---------------------------------------------------------------|
-| `VITE_API_URL`              | yes      | the API's public URL, no trailing slash                       |
-| `VITE_EMBED_PARENT_ORIGINS` | no       | who may frame `/embed` and exchange messages with it. Default `https://www.amittal.dev,http://localhost:5173` |
+| name                        | value                                                                     |
+|-----------------------------|---------------------------------------------------------------------------|
+| `VITE_API_URL`              | the API's URL, no trailing slash. Default `https://edusched-api.amittal.dev` |
+| `VITE_API`                  | `mock` to use the in-memory API                                           |
+| `VITE_EMBED_PARENT_ORIGINS` | who may frame `/embed`. Default `https://www.amittal.dev,http://localhost:5173` |
 
-Both are read at build time. `vercel.json` sets up the SPA rewrite, a one-year immutable cache for `/assets` and
-`/fonts`, and security headers. Its CSP uses `frame-ancestors 'none'` everywhere except `/embed`, which only
-`https://www.amittal.dev` may frame. The CSP's `connect-src` allows `https://*.amittal.dev` and
-`https://*.workers.dev`. Narrow it to the API's exact host once that host is known. If you change
-`VITE_EMBED_PARENT_ORIGINS`, update the `/embed` `frame-ancestors` to match.
+`vercel.json` sends only app routes to `index.html` (real files such as `robots.txt` and `sitemap.xml` are served as
+they are; unknown paths get `public/404.html`), sets a one-year cache on `/assets` and `/fonts`, and a CSP whose
+`connect-src` allows the API and `https://api.amittal.dev` (page-view counts). Only `https://www.amittal.dev` may frame
+`/embed`.
 
-## /embed messages
+## /embed
 
-Parent to embed: `{type:'theme', tokens:{bg, ink, accent, muted, line}}` and `{type:'command', name:'race'|'reset'}`.
-Embed to parent: `{type:'ready'}`, `{type:'height', px}` and `{type:'stage', i, name, ms, ok, lane?}`. The stage
-indexes are 0 JWT login, 1 Base timetable, 2 Change overlay, 3 Free-room query, 4 Clash checks and 5 Commit change.
-Every `ms` is a real browser-side request time:
-
-- 0 is the professor's login.
-- 1 and 2 are the professor's and the student's timetable reads.
-- 3 is the latest free-room query.
-- 4 and 5 both come from the single postpone request, because the server runs the clash checks and the commit in one transaction.
-
-During a race, stages 4 and 5 are sent once per request, marked with `lane: 'A'` or `'B'`.
-
-The origin is checked on every message in both directions. Theme tokens are used only if the board stays
-readable: a light `bg` is ignored, and `ink` and `accent` must keep AA contrast.
+A compact, read-only week of the demo college for the portfolio (noindex). Parent to embed:
+`{type:'theme', tokens:{bg}}` picks light or dark from the parent's background. Embed to parent: `{type:'ready'}` and
+`{type:'height', px}`. Messages are exchanged only with the origins above.
