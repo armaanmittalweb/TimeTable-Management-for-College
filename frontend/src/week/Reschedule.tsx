@@ -33,7 +33,14 @@ export function useReschedule(full: WorkspaceFull | undefined) {
       if (!slug) return;
       try {
         const slots = await api.w(slug).slots(occ.classId, weekStart, occ.date);
-        setSt((s) => (s && s.occ.key === occ.key && s.weekStart === weekStart ? { ...s, slots, slotsError: null } : s));
+        setSt((s) => {
+          if (!s || s.occ.key !== occ.key || s.weekStart !== weekStart) return s;
+          // Keep the picked slot only if it's still free, with a room that's still free.
+          const fresh = s.pick ? slots.find((x) => slotId(x) === slotId(s.pick!)) : undefined;
+          const pick = fresh && isFree(fresh) ? fresh : null;
+          const roomId = pick ? (pick.freeRooms.some((r) => r.id === s.roomId) ? s.roomId : pick.freeRooms[0]?.id ?? null) : null;
+          return { ...s, slots, slotsError: null, pick, roomId };
+        });
       } catch (e) {
         setSt((s) => (s && s.occ.key === occ.key ? { ...s, slots: [], slotsError: e instanceof ApiFailure ? e : new ApiFailure(0, null, true) } : s));
       }
@@ -84,8 +91,8 @@ function busyReason(s: SlotAvailability, o: Occurrence, full: WorkspaceFull) {
 }
 
 /** Slot cells for one day column. Each cell is one period tall; hovering shows the class's full length. */
-export function SlotOverlay({ col, r, pos, full, over, onPick, periodLen }: {
-  col: Column; r: ReschedState; pos: (s: string, e: string) => { top: number; height: number }; full: WorkspaceFull;
+export function SlotOverlay({ col, r, pos, full, over, onPick, periodLen, today, nowMin }: {
+  col: Column; r: ReschedState; today: string; nowMin: number; pos: (s: string, e: string) => { top: number; height: number }; full: WorkspaceFull;
   over: string | null; onPick: (s: SlotAvailability) => void; periodLen: (start: string) => number;
 }) {
   const [hover, setHover] = useState<string | null>(null);
@@ -93,8 +100,10 @@ export function SlotOverlay({ col, r, pos, full, over, onPick, periodLen }: {
   const mine = r.slots.filter((s) => s.date === col.key && !isCurrent(s, r.occ));
   const show = hover ?? over ?? (r.pick && r.pick.date === col.key ? slotId(r.pick) : null);
   const shown = show ? mine.find((s) => slotId(s) === show) : null;
+  const past = col.key < today ? 'all' : col.key === today ? pos('00:00', `${String(Math.floor(nowMin / 60)).padStart(2, '0')}:${String(nowMin % 60).padStart(2, '0')}`) : null;
   return (
     <>
+      {past && <span className="slot-past" style={past === 'all' ? { top: 0, bottom: 0 } : { top: 0, height: Math.max(0, past.top + past.height) }} aria-hidden="true" />}
       {mine.map((s) => {
         const p = pos(s.start, s.end);
         const cellH = Math.min(p.height, pos(s.start, fromMin(toMin(s.start) + periodLen(s.start))).height);
@@ -125,7 +134,7 @@ export function SlotOverlay({ col, r, pos, full, over, onPick, periodLen }: {
             onFocus={() => setHover(id)}
             onBlur={() => setHover(null)}
           >
-            <span>{picked ? `${s.start} · ${room}` : 'Free'}</span>
+            <span>{picked ? `${s.start}${room ? ` · ${room}` : ''}` : 'Free'}</span>
             {!picked && <span className="slot-rooms">{s.freeRooms.length} {s.freeRooms.length === 1 ? 'room' : 'rooms'}</span>}
           </button>
         );

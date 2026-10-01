@@ -115,6 +115,7 @@
 }
 .slot.is-busy .slot-why { font-size: 11px; color: var(--ink-2); background: var(--bg); padding: 0 4px; border-radius: 3px; opacity: 0; transition: opacity 80ms; }
 .slot.is-busy:hover .slot-why { opacity: 1; }
+.slot-past { position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(135deg, transparent 0 5px, var(--hatch) 5px 6px); }
 .slot-ghost { position: absolute; left: 3px; right: 3px; z-index: 4; border-radius: var(--radius); border: 1.5px dashed var(--ci); pointer-events: none; }
 
 .drag-ghost {

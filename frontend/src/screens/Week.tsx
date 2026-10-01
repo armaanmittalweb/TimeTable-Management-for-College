@@ -301,7 +301,7 @@ export function WeekScreen({ scope, full, title }: { scope: Scope; full?: Worksp
                 onOpen={open}
                 overlay={
                   r.st && full
-                    ? (col, pos) => <SlotOverlay col={col} r={r.st!} pos={pos} full={full} over={drag.drag?.over ?? null} onPick={r.pick} periodLen={periodLen} />
+                    ? (col, pos) => <SlotOverlay col={col} r={r.st!} pos={pos} full={full} over={drag.drag?.over ?? null} onPick={r.pick} periodLen={periodLen} today={today} nowMin={now.minutes} />
                     : undefined
                 }
                 blockProps={(o) => (r.st && o.key === r.st.occ.key ? { onPointerDown: drag.onPointerDown, onClickCapture: drag.onClickCapture, 'aria-describedby': 'drag-help' } : {})}
@@ -414,7 +414,7 @@ function SubBar({ start, full, filter, changes, scope, onWeek, onFeed, offlineSi
         {changes > 0 && (
           <Link className="sub-changes" href={`${scope.base === '/' ? '' : scope.base}/changes`}>
             <span className="dot" aria-hidden="true" />
-            {plural(changes, 'change')}<span className="sub-long"> this week</span>
+            <span>{plural(changes, 'change')}<span className="sub-long"> this week</span></span>
           </Link>
         )}
         {changes === 0 && !offlineSince && <span className="sub-nochange">No changes this week</span>}

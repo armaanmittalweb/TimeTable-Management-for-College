@@ -850,7 +850,7 @@ on('POST', '/api/w/:slug/classes/:id/move', ({ params, body }) => {
   occurrenceCheck(a, cls, d);
   const found = clashes(a.ws, { date: toDate, start: toStart, end: toEnd, roomId, teacherId: cls.teacherId, batchId: cls.batchId }, cls.id);
   if (found.length) {
-    const rest = slots(a.ws, cls, toDate).filter((s) => (s.date > toDate || (s.date === toDate && s.start > toStart)) && !s.teacherBusy && !s.batchBusy && s.freeRooms.length);
+    const rest = slots(a.ws, cls, toDate).filter((s) => (s.date > toDate || (s.date === toDate && s.start >= toStart)) && !s.teacherBusy && !s.batchBusy && s.freeRooms.length);
     throw new Fail(409, 'clash', clashSentence(found[0], DAY_SHORT[dow(toDate)]), { clashes: found, suggestion: rest[0] ?? null });
   }
   const row: ChangeRow = { id: nextId(), classId: cls.id, occursOn: d, kind: 'moved', toDate, toStart, toEnd, toRoomId: roomId, reason: body.reason ? String(body.reason).slice(0, 200) : null, createdBy: a.name, createdAt: iso() };
