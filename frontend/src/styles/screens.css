@@ -175,9 +175,6 @@
 .front-main .rail { top: 100px; }
 .front-context { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; padding: 10px 16px; background: var(--bg-rail); border-bottom: 1px solid var(--line); font-size: 13.5px; }
 .front-context-note { color: var(--muted); font-size: 13px; }
-.front-text { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; padding: 36px 24px 28px; border-top: 1px solid var(--line); max-width: 1200px; }
-.front-text h3 { font-size: 14px; margin-bottom: 6px; }
-.front-text p { color: var(--ink-2); font-size: 13.5px; line-height: 1.55; }
 .front-foot { display: flex; gap: 20px; flex-wrap: wrap; padding: 16px 24px 28px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
 
 /* ---------- Settings ---------- */
@@ -228,7 +225,7 @@
 }
 @media (max-width: 900px) {
   .front-tag { display: none; }
-  .front-text { grid-template-columns: 1fr; gap: 18px; }
+
   .settings { grid-template-columns: 1fr; gap: 12px; }
   .set-nav { position: static; flex-direction: row; flex-wrap: wrap; }
   .set-nav h1 { width: 100%; }

@@ -11,6 +11,7 @@ import './styles/grid.css';
 import './styles/panel.css';
 import './styles/screens.css';
 import './styles/setup.css';
+import './styles/landing.css';
 import './styles/print.css';
 
 applyTheme();

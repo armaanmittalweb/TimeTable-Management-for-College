@@ -60,9 +60,15 @@ async function signIn(page, email = 'priya.menon@riverside.edu') {
 const scenes = {
   async front(page, size) {
     await page.goto(BASE + '/');
-    await page.locator('.blk').first().waitFor();
+    await page.locator('.blk, .dayl, .today-empty').first().waitFor();
     await settle(page);
-    await shot(page, `front-${size}`, { full: size.startsWith('desktop') });
+    await shot(page, `front-${size}`);
+    await shot(page, `front-full-${size}`, { full: true });
+    await page.getByRole('tab', { name: 'Teacher' }).click();
+    await page.getByRole('button', { name: /Pick a slot/ }).click();
+    await page.locator('#how').evaluate((el) => el.scrollIntoView());
+    await settle(page, 300);
+    await shot(page, `front-how-${size}`);
   },
   async week(page, size) {
     await startDemo(page);
